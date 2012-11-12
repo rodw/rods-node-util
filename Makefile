@@ -1,48 +1,48 @@
 # COFFEE #######################################################################
-COFFEE_EXE ?= ./node_modules/.bin/coffee								# the coffee executable
-NODE_EXE ?= node																				# the node executable
-COFFEE_COMPILE ?= $(COFFEE_EXE) -c											# command to compile .coffee files
-COFFEE_COMPILE_ARGS ?= -l																# additional arguments when compiling .coffee files
-COFFEE_SRCS ?= $(wildcard lib/*.coffee *.coffee)				# list of .coffee files
-COFFEE_TEST_SRCS ?= $(wildcard test/*.coffee)						# list of .coffee test files
-COFFEE_JS ?= ${COFFEE_SRCS:.coffee=.js}									# list of .js files generated from .coffee files
+COFFEE_EXE ?= ./node_modules/.bin/coffee
+NODE_EXE ?= node
+COFFEE_COMPILE ?= $(COFFEE_EXE) -c
+COFFEE_COMPILE_ARGS ?= -l
+COFFEE_SRCS ?= $(wildcard lib/*.coffee *.coffee)
+COFFEE_TEST_SRCS ?= $(wildcard test/*.coffee)
+COFFEE_JS ?= ${COFFEE_SRCS:.coffee=.js}
 
 # NPM ##########################################################################
-NPM_EXE ?= npm																					# the npm executable
-PACKAGE_JSON ?= package.json														# the npm package file
-NODE_MODULES ?= node_modules														# where npm installs external modules
-MODULE_DIR ?= module																		# where to place the generated module
+NPM_EXE ?= npm
+PACKAGE_JSON ?= package.json
+NODE_MODULES ?= node_modules
+MODULE_DIR ?= module
 
 # MOCHA ########################################################################
-MOCHA_EXE ?= mocha															# mocha executabable
-MOCHA_TESTS ?= $(wildcard test/test-*.coffee)		# list of mocha test files
-MOCHA_TEST_PATTERN ?=														# filter for unit tests to run (useful on cmd line)
-MOCHA_TIMEOUT ?=-t 3000													# test duration that is considerd a faliure
-MOCHA_TEST_ARGS  ?= -R list --compilers coffee:coffee-script $(MOCHA_TIMEOUT) $(MOCHA_TEST_PATTERN)	# args to pass to mocha during test runs
+MOCHA_EXE ?= mocha
+MOCHA_TESTS ?= $(wildcard test/test-*.coffee)
+MOCHA_TEST_PATTERN ?=
+MOCHA_TIMEOUT ?=-t 2000
+MOCHA_TEST_ARGS  ?= -R list --compilers coffee:coffee-script $(MOCHA_TIMEOUT) $(MOCHA_TEST_PATTERN)
 
-# JSCOVERAGE ################################################################### 
-JSCOVERAGE_EXE ?= node-jscoverage												# the jscoverage executable
-JSCOVERAGE_REPORT ?= docs/coverage.html									# the generated jscoverage report
-JSCOVERAGE_TMP_DIR ?=  ./jscov-tmp											# temporary container for js files to be instrumented
-LIB_COV ?= lib-cov																			# container for instrumented js files
-LIB ?= lib																							# container for uninstrumented coffee/js files
-MOCHA_COV_ARGS  ?= -R html-cov --compilers coffee:coffee-script --globals "_\$$jscoverage" # args to pass to mocha during coverage runs	
+# JSCOVERAGE ###################################################################
+JSCOVERAGE_EXE ?= node-jscoverage
+JSCOVERAGE_REPORT ?= docs/coverage.html
+JSCOVERAGE_TMP_DIR ?= ./jscov-tmp
+LIB_COV ?= lib-cov
+LIB ?= lib
+MOCHA_COV_ARGS ?= -R html-cov --compilers coffee:coffee-script --globals "_\$$jscoverage"
 
 # MARKDOWN #####################################################################
-MARKDOWN_SRCS ?= $(shell find . -type f -name '*.md' | grep -v node_modules)																# list of markdown documention ifiles
-MARKDOWN_HTML ?= ${MARKDOWN_SRCS:.md=.html}																																			# list of html files generated from markdown
-MARKDOWN_PROCESSOR ?= pandoc																																										# executable to process markdown
-MARKDOWN_STYLESHEET ?= docs/styles/markdown.css																																	# stylesheet for markdown html
-MARKDOWN_PROCESSOR_ARGS ?= -f markdown -t html -s -H $(MARKDOWN_STYLESHEET) --toc --highlight-style pygments		# arguments to pass to markdown executable
+MARKDOWN_SRCS ?= $(shell find . -type f -name '*.md' | grep -v node_modules)
+MARKDOWN_HTML ?= ${MARKDOWN_SRCS:.md=.html}
+MARKDOWN_PROCESSOR ?= pandoc
+MARKDOWN_STYLESHEET ?= docs/styles/markdown.css
+MARKDOWN_PROCESSOR_ARGS ?= -f markdown -t html -s -H $(MARKDOWN_STYLESHEET) --toc --highlight-style pygments
 
 # OTHER ########################################################################
-RM_DASH_I ?= -f # additional flag passed to `rm`. set to `-i` to force confirmation before removing files.
+RM_DASH_I ?= -f
 
 ################################################################################
 # META-TARGETS AND SIMILAR
 
 # `.SUFFIXES` - reset suffixes in case any were previously defined
-.SUFFIXES: 
+.SUFFIXES:
 
 # `.PHONY` - make targets that aren't actually files
 .PHONY: all build-coffee clean clean-coverage clean-docco clean-docs clean-js clean-markdown clean-module clean-node-modules clean-test-module-install coverage docco docs fully-clean-node-modules help js markdown module targets test test-module-install todo
@@ -70,7 +70,7 @@ clean: clean-coverage clean-docco clean-docs clean-js clean-module clean-test-mo
 clean-test-module-install:
 	rm -r $(RM_DASH_I) ../testing-module-install
 
-clean-module: 
+clean-module:
 	rm -r $(RM_DASH_I) $(MODULE_DIR)
 
 clean-node-modules:

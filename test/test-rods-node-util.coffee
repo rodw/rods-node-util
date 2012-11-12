@@ -25,6 +25,114 @@ Util = require(path.join(LIB_DIR,'rods-node-util'))
 # ## Tests
 
 describe 'Rod\'s Node.js Utilities', ->
+  describe 'file_to_array',->
+    DATA_FILE = path.join(__dirname,'data_file.txt')
+    
+    it 'should read a file into an array of lines',(done)->      
+      result = Util.file_to_array(DATA_FILE,{})
+      expected = [
+        'line 1',
+        '  line 2   ',
+        '# line 3 is a comment',
+        'line 4',
+        '',
+        ' # line 6 is a comment',
+        'line 7  ',
+        ''
+      ]
+      for line in expected
+        line.should.equal result.shift()
+      result.length.should.equal 0
+      done()
+          
+    it 'should trim, skip blanks and skip # comments by default',(done)->      
+      result = Util.file_to_array(DATA_FILE)
+      expected = [
+        'line 1',
+        'line 2',
+        'line 4',
+        'line 7'
+      ]
+      for line in expected
+        line.should.equal result.shift()
+      result.length.should.equal 0
+      done()
+      
+    it 'should trim when asked',(done)->      
+      result = Util.file_to_array(DATA_FILE,{trim:true})
+      expected = [
+        'line 1',
+        'line 2',
+        '# line 3 is a comment',
+        'line 4',
+        '',
+        '# line 6 is a comment',
+        'line 7',
+        ''
+      ]
+      for line in expected
+        line.should.equal result.shift()
+      result.length.should.equal 0
+      done()
+            
+    it 'should trim and skip comments when asked',(done)->      
+      result = Util.file_to_array(DATA_FILE,{trim:true,comment_char:'#'})
+      expected = [
+        'line 1',
+        'line 2',
+        'line 4',
+        '',
+        'line 7',
+        ''
+      ]
+      for line in expected
+        line.should.equal result.shift()
+      result.length.should.equal 0
+      done()
+          
+    it 'should allow custom comment chars',(done)->      
+      result = Util.file_to_array(DATA_FILE,{comment_char:'l'})
+      expected = [
+        '# line 3 is a comment',
+        '',
+        ' # line 6 is a comment',
+        ''
+      ]
+      for line in expected
+        line.should.equal result.shift()
+      result.length.should.equal 0
+      done()
+
+    it 'should strip blanks when asked',(done)->      
+      result = Util.file_to_array(DATA_FILE,{strip_blanks:true})
+      expected = [
+        'line 1',
+        '  line 2   ',
+        '# line 3 is a comment',
+        'line 4',
+        ' # line 6 is a comment',
+        'line 7  '
+      ]
+      for line in expected
+        line.should.equal result.shift()
+      result.length.should.equal 0
+      done()
+            
+    it 'should trim and strip blanks when asked',(done)->      
+      result = Util.file_to_array(DATA_FILE,{strip_blanks:true,trim:true})
+      expected = [
+        'line 1',
+        'line 2',
+        '# line 3 is a comment',
+        'line 4',
+        '# line 6 is a comment',
+        'line 7'
+      ]
+      for line in expected
+        line.should.equal result.shift()
+      result.length.should.equal 0
+      done()
+
   describe 'trim',->
     it 'shouldn\'t choke on null values',(done)->
       result = Util.trim(null)
@@ -54,6 +162,27 @@ describe 'Rod\'s Node.js Utilities', ->
       Util.trim(" \n \t \r\f xyzzy \n\t ").should.equal('xyzzy')
       done()
       
+      
+  describe 'object_values',->
+    it 'returns an array of object values',(done)->
+      obj = { alpha:1, beta:2, gamma:3, another:3 }
+      obj.foo = ()->console.log("some function")    
+      result = Util.object_values(obj)
+      result.length.should.equal 5
+      (1 in result).should.be.ok
+      (2 in result).should.be.ok
+      (3 in result).should.be.ok
+      found_function = false
+      three_count = 0
+      for v in result
+        if v is 3
+          three_count += 1
+        else if typeof v is 'function'
+          found_function = true
+      found_function.should.be.ok
+      three_count.should.equal 2
+      done()
+
   describe 'object_to_array',->
     it 'doesn\'t choke on null values',(done)->
       result = Util.object_to_array(null)
@@ -112,13 +241,18 @@ describe 'Rod\'s Node.js Utilities', ->
       found_c.should.be.ok
       found_foo.should.be.ok
       done()
-      
-  describe 'sort_by_value',->
-    it 'doesn\'t choke on null values',(done)->
-      result = Util.sort_by_value(null)
-      (result?).should.not.be.ok
-      done()
 
+  describe 'comparator',->
+    it 'returns a positive value if a > b',(done)->
+      (Util.comparator(2,1) > 0).should.be.ok
+      (Util.comparator(1,2) < 0).should.be.ok
+      (Util.comparator(2,2) == 0).should.be.ok
+      (Util.comparator('z','a') > 0).should.be.ok
+      (Util.comparator('a','z') < 0).should.be.ok
+      (Util.comparator('z','z') == 0).should.be.ok
+      done()      
+            
+  describe 'sort_by_value',->
     it 'returns an array of pairs, sorted by value',(done)->
       map = { a:5, e:1, f:0, c:3, b:4, d:2}
       result = Util.sort_by_value(map)
@@ -138,30 +272,47 @@ describe 'Rod\'s Node.js Utilities', ->
         else if index == 0
           pair[0].should.equal 'f'
       done()
-
       
   describe 'sort_by_key',->
-    it 'doesn\'t choke on null values',(done)->
-      result = Util.sort_by_value(null)
-      (result?).should.not.be.ok
-      done()
-
     it 'returns an array of pairs, sorted by key',(done)->
-      map = { a:5, e:1, f:0, c:3, b:4, d:2}
+      map = { a:0, e:4, f:5, c:2, b:1, d:3}
       result = Util.sort_by_key(map)
       result.length.should.equal(6)
       for pair,index in result
         pair[1].should.equal index
-        if index == 5
+        if index == 0
           pair[0].should.equal 'a'
-        else if index == 4
-          pair[0].should.equal 'b'
-        else if index == 3
-          pair[0].should.equal 'c'
-        else if index == 2
-          pair[0].should.equal 'd'
         else if index == 1
+          pair[0].should.equal 'b'
+        else if index == 2
+          pair[0].should.equal 'c'
+        else if index == 3
+          pair[0].should.equal 'd'
+        else if index == 4
           pair[0].should.equal 'e'
-        else if index == 0
+        else if index == 5
           pair[0].should.equal 'f'
+      done()
+      
+  describe 'transpose function',->
+    it 'helps sort by value, descending',(done)->
+      map = { a:5, e:1, f:0, c:3, b:4, d:2}
+      result = Util.sort_by_value(map,Util.transpose(Util.comparator))
+      result.length.should.equal(6)
+      for pair,index in result
+        pair[1].should.equal (5-index)
+      done()            
+
+  describe 'frequency_count',->
+    it 'returns a map of unique array elements to number of occurrences in array',(done)->
+      a = [ 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 'watermelon', 'banana', 'watermelon' ]
+      f = Util.frequency_count(a)
+      (f[0]?).should.not.be.ok
+      f[1].should.equal 1
+      f[2].should.equal 2
+      f[3].should.equal 3
+      f[4].should.equal 4
+      f['watermelon'].should.equal 2
+      f['banana'].should.equal 1
+      (f['apple']?).should.not.be.ok
       done()

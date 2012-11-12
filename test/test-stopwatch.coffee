@@ -86,3 +86,65 @@ describe "Stopwatch",->
     @method_started.should.not.be.ok
     @method_finished.should.not.be.ok
     Stopwatch.time_async @a_slow_method, callback
+    
+  it "returns any provided data (sync case)", (done)->
+    @method_started.should.not.be.ok
+    @method_finished.should.not.be.ok
+    result = Stopwatch.time_sync { alpha:1, beta:2 }, @a_slow_method
+    @method_started.should.be.ok
+    @method_finished.should.be.ok
+    result.should.exist
+    result.start_time.should.exist
+    result.finish_time.should.exist
+    result.elapsed_time.should.exist
+    result.finish_time.should.be.above result.start_time
+    result.elapsed_time.should.be.above 0
+    result.alpha.should.equal 1
+    result.beta.should.equal 2
+    done()
+
+  it "allows null base map (async case)", (done)->
+    callback = (result)=>
+      @method_started.should.be.ok
+      @method_finished.should.be.ok
+      result.should.exist
+      result.start_time.should.exist
+      result.finish_time.should.exist
+      result.elapsed_time.should.exist
+      result.finish_time.should.be.above result.start_time
+      result.elapsed_time.should.be.above 0
+      done()
+    @method_started.should.not.be.ok
+    @method_finished.should.not.be.ok
+    Stopwatch.time_async null, @a_slow_method, callback
+  it "returns any provided data (async case)", (done)->
+    callback = (result)=>
+      @method_started.should.be.ok
+      @method_finished.should.be.ok
+      result.should.exist
+      result.start_time.should.exist
+      result.finish_time.should.exist
+      result.elapsed_time.should.exist
+      result.finish_time.should.be.above result.start_time
+      result.elapsed_time.should.be.above 0
+      result.alpha.should.equal 1
+      result.beta.should.equal 2
+      done()
+    @method_started.should.not.be.ok
+    @method_finished.should.not.be.ok
+    Stopwatch.time_async { alpha:1, beta:2 }, @a_slow_method, callback
+
+  it "can be used for asynchronous timing without process.nextTick.", (done)->
+    callback = (result)=>
+      @method_started.should.be.ok
+      @method_finished.should.be.ok
+      result.should.exist
+      result.start_time.should.exist
+      result.finish_time.should.exist
+      result.elapsed_time.should.exist
+      result.finish_time.should.be.above result.start_time
+      result.elapsed_time.should.be.above 0
+      done()
+    @method_started.should.not.be.ok
+    @method_finished.should.not.be.ok
+    Stopwatch.time_async {},@a_slow_method, callback, false

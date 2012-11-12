@@ -47,7 +47,7 @@ class Stopwatch
     fn()
     return timer.stop()
 
-  time_async:(base={},fn,callback)->
+  time_async:(base={},fn,callback,use_next_tick = true)=>
     if typeof base == 'function'
       callback = fn
       fn = base
@@ -59,8 +59,7 @@ class Stopwatch
       finally
         if callback?
           callback result
-          
-    if IS_NODE # process.nextTick is more efficient than setTimeout, so use it if we can
+    if use_next_tick
       process.nextTick(runner)
     else
       setTimeout(runner,0)
