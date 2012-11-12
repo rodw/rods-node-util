@@ -89,7 +89,7 @@ describe 'Rod\'s Node.js Utilities', ->
       found_c.should.be.ok
       done()
 
-    it 'returns includes newly decleared functions ',(done)->
+    it 'returns includes newly declared functions ',(done)->
       obj = { alpha:1, beta:2, gamma:3 }
       obj.foo = ()->console.log("some function")
       result = Util.object_to_array(obj)
@@ -111,4 +111,57 @@ describe 'Rod\'s Node.js Utilities', ->
       found_b.should.be.ok
       found_c.should.be.ok
       found_foo.should.be.ok
+      done()
+      
+  describe 'sort_by_value',->
+    it 'doesn\'t choke on null values',(done)->
+      result = Util.sort_by_value(null)
+      (result?).should.not.be.ok
+      done()
+
+    it 'returns an array of pairs, sorted by value',(done)->
+      map = { a:5, e:1, f:0, c:3, b:4, d:2}
+      result = Util.sort_by_value(map)
+      result.length.should.equal(6)
+      for pair,index in result
+        pair[1].should.equal index
+        if index == 5
+          pair[0].should.equal 'a'
+        else if index == 4
+          pair[0].should.equal 'b'
+        else if index == 3
+          pair[0].should.equal 'c'
+        else if index == 2
+          pair[0].should.equal 'd'
+        else if index == 1
+          pair[0].should.equal 'e'
+        else if index == 0
+          pair[0].should.equal 'f'
+      done()
+
+      
+  describe 'sort_by_key',->
+    it 'doesn\'t choke on null values',(done)->
+      result = Util.sort_by_value(null)
+      (result?).should.not.be.ok
+      done()
+
+    it 'returns an array of pairs, sorted by key',(done)->
+      map = { a:5, e:1, f:0, c:3, b:4, d:2}
+      result = Util.sort_by_key(map)
+      result.length.should.equal(6)
+      for pair,index in result
+        pair[1].should.equal index
+        if index == 5
+          pair[0].should.equal 'a'
+        else if index == 4
+          pair[0].should.equal 'b'
+        else if index == 3
+          pair[0].should.equal 'c'
+        else if index == 2
+          pair[0].should.equal 'd'
+        else if index == 1
+          pair[0].should.equal 'e'
+        else if index == 0
+          pair[0].should.equal 'f'
       done()
