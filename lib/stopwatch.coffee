@@ -73,3 +73,4 @@ export_methods_to = (obj)->
   
 exports = exports ? this
 exports = export_methods_to(exports)
+exports.export_methods_to = export_methods_to

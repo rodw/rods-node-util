@@ -75,7 +75,7 @@ add_util_methods = (Util)->
   # `frequency_count` - an alias for `array_to_bag`.
   Util.frequency_count = Util.array_to_bag
 
-  # returns a negative value if a < b, a postive value if a > b or 0 otherwise
+  # `comparator` - returns a negative value if a < b, a postive value if a > b or 0 otherwise
   Util.comparator = (a,b)->
     if a > b
       return 1
@@ -109,13 +109,13 @@ add_util_methods = (Util)->
   #
   # could be implemented as:
   #
-  #   var i = 0;
-  #   init = function() { i = 0; }
-  #   cond = function() { return i < 10; }
-  #   actn = function(next) { console.log(i); next(); }
-  #   incr = function() { i = i + 1; }
-  #   done = function() { }
-  #   async_for_loop(init,cond,actn,incr,done)
+  #     var i = 0;
+  #     init = function() { i = 0; }
+  #     cond = function() { return i < 10; }
+  #     actn = function(next) { console.log(i); next(); }
+  #     incr = function() { i = i + 1; }
+  #     done = function() { }
+  #     async_for_loop(init,cond,actn,incr,done)
   # 
   Util.async_for_loop = (initialize,condition,action,increment,whendone)->
     looper = ()->
@@ -137,13 +137,13 @@ add_util_methods = (Util)->
   #
   # For example, the loop:
   # 
-  #    [0..10].foreach (elt,index,array)-> console.log elt
+  #      [0..10].foreach (elt,index,array)-> console.log elt
   #
   # could be implemented as:
   # 
-  #   async_for_each [0..10], (elt,index,array,next)->
-  #     console.log elt
-  #     next()
+  #     async_for_each [0..10], (elt,index,array,next)->
+  #       console.log elt
+  #       next()
   # 
   Util.async_for_each = (list,action,whendone)->
     i = m = null
@@ -156,7 +156,9 @@ add_util_methods = (Util)->
   # For a given synchronous function `f(a,b,c,...)`
   # returns a new function `g(a,b,c,...,callback)`
   # that is equivalent to
-  #   callback(f(a,b,c,...));
+  # 
+  #     callback(f(a,b,c,...));
+  # 
   # The resulting method isn't asynchronous, but
   # approximates the method signature and control flow
   # used by asynchronous methods. This makes it easy
@@ -167,5 +169,7 @@ add_util_methods = (Util)->
       callback = args.pop()
       callback(f(args...))
 
+
 exports = exports ? this
+exports.add_util_methods = (obj)->add_util_methods(obj)
 exports = add_util_methods(exports)

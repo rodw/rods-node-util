@@ -6,6 +6,7 @@
   "bugs"            : "https://github.com/rodw/rods-node-util/issues",
   "author"          : "Rodney Waldhoff (http://heyrod.com/)",
   "version"         : "0.1.0" ,
+  "main"            : "lib/index.js",
   "devDependencies" : {
     "coffee-script"   : "latest",
     "expresso"        : "latest",
