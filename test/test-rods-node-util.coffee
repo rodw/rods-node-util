@@ -316,3 +316,57 @@ describe 'Rod\'s Node.js Utilities', ->
       f['banana'].should.equal 1
       (f['apple']?).should.not.be.ok
       done()
+
+  describe 'async_for_loop',->
+    it 'supports a simple counter',(done)->
+      expected = [0,1,2,3,4,5,6,7,8,9]    
+      i = 0
+      actual = []
+      fn_init = ()-> i = 0 
+      fn_cond = ()-> i < 10
+      fn_act = (next)->
+        actual.push(i)
+        next()
+      fn_incr = ()-> i = i + 1
+      fn_whendone = ()->
+        for v,i in expected
+          v.should.equal(actual[i])
+        done()
+      Util.async_for_loop(fn_init,fn_cond,fn_act,fn_incr,fn_whendone)
+
+  describe 'async_for_each',->
+    it 'can iterate over the elements of a list',(done)->
+      expected = [0,1,2,3,4,5,6,7,8,9]
+      actual = []
+      action = (value, index, array, next)->
+        actual.push value
+        next()
+      whendone = ()->
+        for v,i in expected
+          v.should.equal(actual[i])
+        done()
+      Util.async_for_each [0,1,2,3,4,5,6,7,8,9], action, whendone 
+
+  describe 'add_callback',->
+    it 'invokes a callback method at the end of another method',(done)->
+      result = null
+      sum = (args...)->
+        result = 0
+        for v in args
+          result += v
+        return result
+      sum( 1, 2, 3, 4, 5 ).should.equal 15
+      sum_with_callback = Util.add_callback(sum)
+      sum_with_callback 1, 2, 3, 4, 5, (result)->
+        result.should.equal 15
+        done()
+        
+    it 'can help us use a synchronous method when an asynchronous-one is expected',(done)->
+      expected = [0,1,2,3,4,5,6,7,8,9]
+      actual = []
+      sync_action = (value, index, array)->actual.push value
+      whendone = ()->
+        for v,i in expected
+          v.should.equal(actual[i])
+        done()
+      Util.async_for_each [0,1,2,3,4,5,6,7,8,9], Util.add_callback(sync_action), whendone 

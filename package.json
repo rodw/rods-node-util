@@ -1,11 +1,11 @@
 {
   "name"            : "rods-node-util" ,
-  "description"     : "A collection of small utility methods",
-  "homepage"        : "http://rodw.github.com/rods-node-util",
+  "description"     : "A collection of small utility methods.",
+  "homepage"        : "https://github.com/rodw/rods-node-util",
   "repository"      : {"type": "git", "url": "git://github.com/rodw/rods-node-util.git"},
   "bugs"            : "https://github.com/rodw/rods-node-util/issues",
   "author"          : "Rodney Waldhoff (http://heyrod.com/)",
-  "version"         : "0.0.1" ,
+  "version"         : "0.1.0" ,
   "devDependencies" : {
     "coffee-script"   : "latest",
     "expresso"        : "latest",

@@ -94,5 +94,78 @@ add_util_methods = (Util)->
   # `sort_by_key` - return an array of name/value pairs, ordred by name.
   Util.sort_by_key =  (m,c = Util.comparator)-> (Util.map_to_array(m)).sort (a,b)-> c(a[0], b[0])
 
+  # `async_for_loop` - Executes an asynchronous for loop.
+  # 
+  # Accepts 5 function-valued parameters:
+  #  * `initialize` - an initialization function (no arguments passed, no return value is expected)
+  #  * `condition` - a predicate that indicates whether we should continue looping (no arguments passed, a boolean value is expected to be returned)
+  #  * `action` - the action to take (a single callback function is passed and should be invoked at the end of the action, no return value is expected)
+  #  * `increment` - called at the end of every `action`, prior to `condition`  (no arguments passed, no return value is expected)
+  #  * `whendone` - called at the end of the loop (when `condition` returns `false`), (no arguments passed, no return value is expected)
+  #
+  # For example, the loop:
+  # 
+  #    for(var i=0; i<10; i++) { console.log(i); }
+  #
+  # could be implemented as:
+  #
+  #   var i = 0;
+  #   init = function() { i = 0; }
+  #   cond = function() { return i < 10; }
+  #   actn = function(next) { console.log(i); next(); }
+  #   incr = function() { i = i + 1; }
+  #   done = function() { }
+  #   async_for_loop(init,cond,actn,incr,done)
+  # 
+  Util.async_for_loop = (initialize,condition,action,increment,whendone)->
+    looper = ()->
+      if condition()            
+        action ()->
+          increment()
+          looper()
+      else
+        whendone() if whendone?
+    initialize()            
+    looper()
+
+  # `async_for_each` - Executes an asynchronous forEach loop.
+  # 
+  # Accepts 3 parameters:
+  #  * `list` - the array to iterate over
+  #  * `action` - the function with the signature (value,index,list,next) indicating the action to take; the provided function `next` *must* be called at the end of processing
+  #  * `whendone` - called at the end of the loop
+  #
+  # For example, the loop:
+  # 
+  #    [0..10].foreach (elt,index,array)-> console.log elt
+  #
+  # could be implemented as:
+  # 
+  #   async_for_each [0..10], (elt,index,array,next)->
+  #     console.log elt
+  #     next()
+  # 
+  Util.async_for_each = (list,action,whendone)->
+    i = m = null
+    init = ()-> i = 0; m = list.length
+    cond = ()-> (i < m)
+    incr = ()-> i += 1
+    act  = (next)-> action(list[i],i,list,next)
+    Util.async_for_loop init, cond, act, incr, whendone
+
+  # For a given synchronous function `f(a,b,c,...)`
+  # returns a new function `g(a,b,c,...,callback)`
+  # that is equivalent to
+  #   callback(f(a,b,c,...));
+  # The resulting method isn't asynchronous, but
+  # approximates the method signature and control flow
+  # used by asynchronous methods. This makes it easy
+  # to use a synchronous method where an
+  # asynchronous one is expected.
+  Util.add_callback = (f)->
+    return (args...)=>
+      callback = args.pop()
+      callback(f(args...))
+
 exports = exports ? this
 exports = add_util_methods(exports)
