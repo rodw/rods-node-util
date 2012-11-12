@@ -109,6 +109,9 @@ module: js test docs coverage
 	cp README.* $(MODULE_DIR)
 	cp Makefile $(MODULE_DIR)
 
+publish-module: module
+	$(NPM_EXE) publish $(MODULE_DIR)
+
 test-module-install: clean-test-module-install js test docs coverage module
 	mkdir ../testing-module-install; cd ../testing-module-install; npm install "$(CURDIR)/module"; node -e "require('assert').ok(require('rods-node-util').trim(' abc ') == 'abc')" && cd $(CURDIR) && rm -r $(RM_DASH_I) ../testing-module-install && echo "IT WORKED."
 
@@ -162,7 +165,7 @@ docs: markdown docco
 
 $(MARKDOWN_HTML_OBJ): $(MARKDOWN_SRCS)
 
-markdown: $(MARKDOWN_HTML_OBJ)
+markdown: $(MARKDOWN_HTML)
 
 docco: $(COFFEE_SRCS) $(NODE_MODULES)
 	rm -r $(RM_DASH_I) docs/docco

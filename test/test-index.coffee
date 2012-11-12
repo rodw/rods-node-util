@@ -13,4 +13,4 @@ describe 'Index', ->
   it 'has Util methods',->
     (RodsNodeUtil.file_to_array?).should.be.ok
   it 'has Stopwatch methods',->
-    (RodsNodeUtil.start?).should.be.ok
+    (RodsNodeUtil.Stopwatch?.start?).should.be.ok

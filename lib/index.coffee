@@ -12,4 +12,4 @@ Util = require(path.join(LIB_DIR,'rods-node-util'))
 Util.add_util_methods(exports)
 
 Stopwatch = require(path.join(LIB_DIR,'stopwatch'))
-Stopwatch.export_methods_to(exports)
+exports.Stopwatch = Stopwatch

@@ -1,6 +1,7 @@
 {
   "name"            : "rods-node-util" ,
   "description"     : "A collection of small utility methods.",
+  "keywords"        : ["utility","util","functor","asynchronous","synchronous","function","library","helper","reuse","common","commons"],
   "homepage"        : "https://github.com/rodw/rods-node-util",
   "repository"      : {"type": "git", "url": "git://github.com/rodw/rods-node-util.git"},
   "bugs"            : "https://github.com/rodw/rods-node-util/issues",
