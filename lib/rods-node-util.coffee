@@ -41,6 +41,21 @@ add_util_methods = (Util)->
     else
       return str
 
+  Util.clone = (map)->
+    clone = {}
+    for name,value of map
+      clone[name] = value
+    return clone
+    
+  Util.deep_clone = (map)->
+    clone = {}
+    for name,value of map
+      if typeof value is 'array' || typeof value is 'object'
+        clone[name] = Util.deep_clone(value)
+      else
+        clone[name] = value
+    return clone
+
   # `object_to_array` - convert an object (map) into an array of name/value pairs
   Util.object_to_array = (object)->
     if object?

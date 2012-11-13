@@ -242,6 +242,65 @@ describe 'Rod\'s Node.js Utilities', ->
       found_foo.should.be.ok
       done()
 
+      
+  describe 'clone',->
+    it 'creates a copy of the given map',(done)->
+      object_one = { a:"alpha", b:"beta" }
+      clone = Util.clone(object_one)
+      clone.a.should.equal object_one.a
+      clone.b.should.equal object_one.b
+      clone.c = "gamma"
+      (object_one.c?).should.not.be.ok
+      clone.a = "not alpha"
+      clone.a.should.not.equal object_one.a
+      done()            
+
+    it 'creates a *shallow* copy of the given map',(done)->
+      object_one = { a:"alpha", b:"beta" }
+      object_two = { x:9, y:12 }
+      array_of_numbers = [ 1, 2, 3, 4 ]
+      array_of_objects = [ object_one, object_two ]
+      compound_object = { list:array_of_numbers, children: array_of_objects, foo:"bar" }
+      clone = Util.clone(compound_object)
+      clone.foo.should.equal compound_object.foo
+      clone.list[0].should.equal compound_object.list[0]
+      clone.children[0].should.equal compound_object.children[0]
+      clone.foo = "not bar"
+      clone.foo.should.not.equal compound_object.foo
+      clone.list[0] = 'a new value'
+      compound_object.list[0].should.equal 'a new value'
+      done()
+      
+  describe 'deep_clone',->
+    it 'creates a copy of the given map',(done)->
+      object_one = { a:"alpha", b:"beta" }
+      clone = Util.deep_clone(object_one)
+      clone.a.should.equal object_one.a
+      clone.b.should.equal object_one.b
+      clone.c = "gamma"
+      (object_one.c?).should.not.be.ok
+      clone.a = "not alpha"
+      clone.a.should.not.equal object_one.a
+      done()            
+
+    it 'creates a *deep* copy of the given map',(done)->
+      object_one = { a:"alpha", b:"beta" }
+      object_two = { x:9, y:12 }
+      array_of_numbers = [ 1, 2, 3, 4 ]
+      array_of_objects = [ object_one, object_two ]
+      compound_object = { list:array_of_numbers, children: array_of_objects, foo:"bar" }
+      clone = Util.deep_clone(compound_object)
+      clone.foo.should.equal compound_object.foo
+      clone.list[0].should.equal compound_object.list[0]
+      clone.children[0].a.should.equal compound_object.children[0].a
+      clone.foo = "not bar"
+      clone.foo.should.not.equal compound_object.foo
+      clone.list[0] = 'a new value'
+      (compound_object.list[0]).should.not.equal 'a new value'
+      clone.children[0].a = 'not alpha'
+      (compound_object.children[0].a).should.not.equal 'not alpha'
+      done()
+      
   describe 'comparator',->
     it 'returns a positive value if a > b',(done)->
       (Util.comparator(2,1) > 0).should.be.ok
