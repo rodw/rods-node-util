@@ -29,7 +29,7 @@ LIB ?= lib
 MOCHA_COV_ARGS ?= -R html-cov --compilers coffee:coffee-script --globals "_\$$jscoverage"
 
 # MARKDOWN #####################################################################
-MARKDOWN_SRCS ?= $(shell find . -type f -name '*.md' | grep -v node_modules)
+MARKDOWN_SRCS ?= $(shell find . -type f -name '*.md' | grep -v node_modules | grep -v module)
 MARKDOWN_HTML ?= ${MARKDOWN_SRCS:.md=.html}
 MARKDOWN_PROCESSOR ?= pandoc
 MARKDOWN_STYLESHEET ?= docs/styles/markdown.css
