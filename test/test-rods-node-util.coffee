@@ -370,3 +370,96 @@ describe 'Rod\'s Node.js Utilities', ->
           v.should.equal(actual[i])
         done()
       Util.async_for_each [0,1,2,3,4,5,6,7,8,9], Util.add_callback(sync_action), whendone 
+
+
+  describe 'fork',->
+    it 'does\'t invoke callback until all results are obtained',(done)->
+      methods = []
+      expected = []
+      for i in [0...10]
+        do (i)->
+          methods.push (callback)->callback("Method #{i}")
+          expected[i] = "Method #{i}"
+      callback = (results)=>
+        for result in results
+          (result[0] in expected).should.be.ok
+        done()
+      Util.fork(methods,callback)
+
+    it 'allows a variable number of arguments returned by callback',(done)->
+      methods = [ ((cb)->cb(1)), ((cb)->cb(2,2)), ((cb)->cb(3,3,3)), ((cb)->cb(4,4,4,4)) ]
+      callback = (results)=>
+        for result,i in results
+          result.length.should.equal i+1
+          for value in result
+            value.should.equal i+1
+        done()
+      Util.fork(methods,callback)
+
+    it 'works with truly asynchronous methods',(done)->
+      FILE_1 = path.join(__dirname,'test-rods-node-util.coffee')
+      FILE_2 = path.join(__dirname,'does-not-exist')
+      FILE_3 = path.join(__dirname,'data_file.txt')
+      methods = []
+      methods.push (cb)-> fs.exists(FILE_1,cb)
+      methods.push (cb)-> fs.exists(FILE_2,cb)
+      methods.push (cb)-> fs.exists(FILE_3,cb)
+      callback = (results)->
+        results[0][0].should.be.ok
+        results[1][0].should.not.be.ok
+        results[2][0].should.be.ok
+        done()
+      Util.fork(methods,callback)
+
+    it 'passes the specified args to the methods',(done)->
+      method_args = []
+      method_args.push [ path.join(__dirname,'test-rods-node-util.coffee') ]
+      method_args.push [ path.join(__dirname,'does-not-exist') ]
+      method_args.push [ path.join(__dirname,'data_file.txt') ]
+      
+      methods = []
+      methods.push (file,cb)-> fs.exists(file,cb)
+      methods.push (file,cb)-> fs.exists(file,cb)
+      methods.push (file,cb)-> fs.exists(file,cb)
+      
+      callback = (results)->
+        results[0][0].should.be.ok
+        results[1][0].should.not.be.ok
+        results[2][0].should.be.ok
+        done()
+        
+      Util.fork(methods,method_args,callback)
+
+
+  describe 'throttled fork',->
+    it 'does\'t invoke callback until all results are obtained',(done)->
+      methods = []
+      expected = []
+      for i in [0...10]
+        do (i)->
+          methods.push (callback)->callback("Method #{i}")
+          expected[i] = "Method #{i}"
+      callback = (results)=>
+        for result in results
+          (result[0] in expected).should.be.ok
+        done()
+      Util.throttled_fork(2,methods,callback)
+
+    it 'passes the specified args to the methods',(done)->
+      method_args = []
+      method_args.push [ path.join(__dirname,'test-rods-node-util.coffee') ]
+      method_args.push [ path.join(__dirname,'does-not-exist') ]
+      method_args.push [ path.join(__dirname,'data_file.txt') ]
+      
+      methods = []
+      methods.push (file,cb)-> fs.exists(file,cb)
+      methods.push (file,cb)-> fs.exists(file,cb)
+      methods.push (file,cb)-> fs.exists(file,cb)
+      
+      callback = (results)->
+        results[0][0].should.be.ok
+        results[1][0].should.not.be.ok
+        results[2][0].should.be.ok
+        done()
+        
+      Util.throttled_fork(2,methods,method_args,callback)

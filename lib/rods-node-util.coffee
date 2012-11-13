@@ -169,7 +169,47 @@ add_util_methods = (Util)->
       callback = args.pop()
       callback(f(args...))
 
+  Util.fork = (methods, args_for_methods, callback)->
+    if !callback? && typeof args_for_methods is 'function'
+      callback = args_for_methods
+      args_for_methods = null
+    results = []
+    remaining_callbacks = methods.length
+    for method, index in methods
+      do (method,index)->
+        method_args = args_for_methods?[index] ? []
+        method method_args..., (callback_args...)->
+          results[index] = callback_args
+          remaining_callbacks--
+          if remaining_callbacks is 0
+            callback(results)
 
+  Util.throttled_fork = (max_parallel, methods, args_for_methods, callback)->
+    if !callback? && typeof args_for_methods is 'function'
+      callback = args_for_methods
+      args_for_methods = null
+    results = []
+    currently_running = 0
+    next_to_run = 0
+    remaining_callbacks = methods.length
+    run_more = ()->
+      while currently_running < max_parallel && next_to_run < methods.length
+        index = next_to_run
+        currently_running++
+        next_to_run++
+        do (index)->
+          method_args = args_for_methods?[index] ? []
+          method = methods[index]
+          method method_args..., (callback_args...)->
+            results[index] = callback_args
+            currently_running--
+            remaining_callbacks--            
+            if remaining_callbacks is 0
+              callback(results)
+            else
+              run_more()
+    run_more()
+              
 exports = exports ? this
 exports.add_util_methods = (obj)->add_util_methods(obj)
 exports = add_util_methods(exports)
