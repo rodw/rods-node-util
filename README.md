@@ -33,6 +33,8 @@ See the test suite for more examples.
 
 The following is a description of *some* of the methods available within this package.
 
+See the test suite (`./test/*.coffee`) for more examples.
+
 ### FileUtil
 
 #### file_to_string(filename,[encoding],callback) / file_to_string_sync(filename,[encoding])

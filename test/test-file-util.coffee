@@ -33,3 +33,15 @@ describe "FileUtil",->
       data = U.file_to_string_sync(DATA_FILE)
       data.should.equal(DATA)
       done()
+
+  describe 'file_to_array_sync',->
+    it "makes robust configuration or data files easy",(done)->
+      result = U.file_to_array_sync(DATA_FILE)
+      expected = [ 'line 1',
+                   'line 2',
+                   'line 4',
+                   'line 7'  ]
+      for line in expected
+        (result.shift()).should.equal line
+      result.length.should.equal 0
+      done()

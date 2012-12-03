@@ -60,7 +60,7 @@ class StringUtil
   # - options.strip_blanks - when true, remove empty lines from the returned array (defaults to `true`)
   string_to_array:(str,options)->
     options = {}  unless options?
-    options.delimiter           = /[\n\r\f\v]/ unless options.trim?
+    options.delimiter           = /[\n\r\f\v]/ unless options.delimiter?
     options.comment_char        = '#'          unless options.comment_char?
     options.comment_char_escape = '\\'         unless options.comment_char_escape?
     options.trim                = true         unless options.trim?

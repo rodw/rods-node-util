@@ -22,6 +22,22 @@ describe "StringUtil",->
       (U.trim(null)?).should.not.be.ok
       done()
 
+  describe 'is_blank',->
+    it "returns true if the given string is null, empty or only contains whitespace",(done)->
+      U.is_blank(null).should.be.ok
+      U.is_blank("").should.be.ok
+      U.is_blank(" ").should.be.ok
+      U.is_blank(" x ").should.not.be.ok
+      done()
+
+  describe 'isnt_blank',->
+    it "returns true if the given string isn't null, isn't empty and contains a non-whitespace char",(done)->
+      U.isnt_blank(null).should.not.be.ok
+      U.isnt_blank("").should.not.be.ok
+      U.isnt_blank(" ").should.not.be.ok
+      U.isnt_blank(" x ").should.be.ok
+      done()
+
   describe 'strip_comment',->
     it "strips characters following the specified character",(done)->
       U.strip_comment('# The quick brown fox jumped.').should.equal ''
@@ -48,8 +64,8 @@ describe "StringUtil",->
       done()
 
   describe 'string_to_array',->
-    it 'should split a string into an array of lines',(done)->
-      result = U.string_to_array(DATA,{ strip_blanks: false, comment_char:false, trim: false, delimiter:/[\n\r\f]/ })
+    it 'splits a string into an array of lines',(done)->
+      result = U.string_to_array(DATA,{ strip_blanks: false, comment_char:false, trim: false, delimiter:/[\n\f\r]/ })
       expected = [ 'This is line 1.',
                    'This is line 2.',
                    '# Line 3 is a comment.',
@@ -66,8 +82,8 @@ describe "StringUtil",->
       result.length.should.equal 0
       done()
 
-    it 'should strip comments when specified',(done)->
-      result = U.string_to_array(DATA,{ strip_blanks: false, comment_char:'#', comment_char_escape:'\\',trim: false, delimiter:/[\n\r\f]/ })
+    it 'strips comments when specified',(done)->
+      result = U.string_to_array(DATA,{ strip_blanks: false, trim: false })
       expected = [ 'This is line 1.',
                    'This is line 2.',
                    '',
@@ -84,8 +100,8 @@ describe "StringUtil",->
       result.length.should.equal 0
       done()
 
-    it 'should trim whitespace when asked',(done)->
-      result = U.string_to_array(DATA,{ strip_blanks: false, comment_char:'#', comment_char_escape:'\\',trim: true, delimiter:/[\n\r\f]/ })
+    it 'trims whitespace when asked',(done)->
+      result = U.string_to_array(DATA,{ strip_blanks: false })
       expected = [ 'This is line 1.',
                    'This is line 2.',
                    '',
@@ -102,8 +118,22 @@ describe "StringUtil",->
       result.length.should.equal 0
       done()
 
-    it 'should skip blank lines when asked',(done)->
-      result = U.string_to_array(DATA,{ strip_blanks: true, comment_char:'#', comment_char_escape:'\\',trim: true, delimiter:/[\n\r\f]/ })
+    it 'skips blank lines when asked',(done)->
+      result = U.string_to_array(DATA,{ })
+      expected = [ 'This is line 1.',
+                   'This is line 2.',
+                   'This is line 4.',
+                   'Line 5 has leading whitespace.',
+                   'Line 7 tries to escape a commment, like this: # see?',
+                   'This is line 9.  Line 8 was blank.',
+                   'This is line 11. Line 10 was just a comment char.' ]
+      for line in expected
+        (result.shift()).should.equal line
+      result.length.should.equal 0
+      done()
+
+    it 'has sensible defaults',(done)->
+      result = U.string_to_array(DATA)
       expected = [ 'This is line 1.',
                    'This is line 2.',
                    'This is line 4.',
