@@ -20,10 +20,12 @@ or by adding it as a dependency in your `package.json`:
 
 To use the module, simply require it:
 
-    var S = require('rods-util').StringUtil;
-    var hello = ' hello.  ';
-    console.log(hello);         // outputs: " hello.  "
-    console.log(S.trim(hello)); // outputs: "hello."
+```javascript
+var S = require('rods-util').StringUtil;
+var hello = ' hello.  ';
+console.log(hello);         // outputs: " hello.  "
+console.log(S.trim(hello)); // outputs: "hello."
+```
 
 See the test suite for more examples.
 
@@ -37,8 +39,10 @@ The following is a description of *some* of the methods available within this pa
 
 Read the file at `filename` into a string.
 
-    var F = require('rods-util').FileUtil
-    str = file_to_string_sync('MY-FILE.TXT');
+```javascript
+var F = require('rods-util').FileUtil
+str = file_to_string_sync('MY-FILE.TXT');
+```
 
 #### file_to_array_sync(filename,options)
 
@@ -52,12 +56,16 @@ Removes leading and trailing whitespace from the given string.
 
 Both vertical (`\n`, `\r\f`, etc.) and horizonal (`\t`, ` `, etc.) whitespace are removed.
 
-    var S = require('rods-util').StringUtil;
-    S.trim("\t hello  \n"); // returns "hello"
+```javascript
+var S = require('rods-util').StringUtil;
+S.trim("\t hello  \n"); // returns "hello"
+```
 
 *Only* the leading and trailing whitespace is removed.  Whitespace that appears "within" the text of the string is left intact.
 
-    S.trim("\t hello  \n\tworld \n"); // returns "hello  \n\tworld"
+```javascript
+S.trim("\t hello  \n\tworld \n"); // returns "hello  \n\tworld"
+```
 
 #### strip_comment(str)
 
@@ -73,10 +81,12 @@ An instance of `comment_char` that is immediately proceeded by `escape_char` wil
 
 Example:
 
-    var S = require('rods-util').StringUtil;
-    var f = S.comment_stripper('%','}');
-    f("This is text. % This is comment."); // returns ""This is text. "
-    f("25}% of 20 is 5");                  // returns "25% of 20 is 5"
+```javascript
+var S = require('rods-util').StringUtil;
+var f = S.comment_stripper('%','}');
+f("This is text. % This is comment."); // returns ""This is text. "
+f("25}% of 20 is 5");                  // returns "25% of 20 is 5"
+```
 
 The `StringUtil.strip_comment` method is a comment stripper with `#` as the comment delimiter, and `\` as the escape character.  (Note that since `\` is JavaScript's escape character, you must write `"\\"` to pass `"\"`. E.g.: `f = S.comment_stripper('#','\\')` will create a comment stripper with a single backslash as the escape character.
 
@@ -86,11 +96,13 @@ Returns a representation of `str` that can be passed to the `RegExp` constructor
 
 Example:
 
-    var S = require('rods-util').StringUtil;
-    var dot_paren = S.escape_for_regexp('.)'); // returns `\.\)`
-    var re = new RegExp('^[A-Z]'+dot_paren)    // returns /^[A-Z]\.\)/
-    re.test("A.)")                             // returns true
-    re.test("A\.\)")                           // returns false
+```javascript
+var S = require('rods-util').StringUtil;
+var dot_paren = S.escape_for_regexp('.)'); // returns `\.\)`
+var re = new RegExp('^[A-Z]'+dot_paren)    // returns /^[A-Z]\.\)/
+re.test("A.)")                             // returns true
+re.test("A\.\)")                           // returns false
+```
 
 #### is_blank(str)
 
@@ -121,8 +133,10 @@ For example, given a string `str` such as:
 
 then:
 
-    var S = require('rods-util').StringUtil;
-    S.string_to_array(str);
+```javascript
+var S = require('rods-util').StringUtil;
+S.string_to_array(str);
+```
 
 will yield:
 
