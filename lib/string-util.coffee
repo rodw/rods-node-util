@@ -53,11 +53,11 @@ class StringUtil
 
   # Splits a string into an array of strings (with various configurable options).
   #
-  # - options.delimiter - pattern on which to split string (defaults to /[\n\r\f\v])
+  # - options.delimiter - the pattern on which to split string (defaults to /[\n\r\f\v]/)
   # - options.comment_char - when present (and not false) this and all subsequent characters (up to the end of the "line") will be stripped (defaults to '#')
   # - options.comment_char_escape - when present, a character than can be used to "escape" a a literal comment character (defaults to '\' but you'll need to write that as '\\')
-  # - options.trim - when present, remove leading and trailing whitespace characters from each "line" (defaults to `true`)
-  # - options.strip_blanks - when present, remove empty lines from the returned array (defaults to `true`)
+  # - options.trim - when true, remove leading and trailing whitespace characters from each "line" (defaults to `true`)
+  # - options.strip_blanks - when true, remove empty lines from the returned array (defaults to `true`)
   string_to_array:(str,options)->
     options = {}  unless options?
     options.delimiter           = /[\n\r\f\v]/ unless options.trim?
