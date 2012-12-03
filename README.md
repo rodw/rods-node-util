@@ -4,30 +4,39 @@ A small library of utility functions and classes, primarily intended for use wit
 
 ## Installation
 
-The module is published as `rods-node-util` on npm.  It has no (runtime) external dependencies.
+The module is published as `rods-util` on npm.  It has no (runtime) external dependencies.
 
-You can install rods-node-util directly through `npm`:
+You can install rods-util directly through `npm`:
 
-    npm install rods-node-util -g
+    npm install rods-util -g
 
 (omit the `-g` flag to install the module in a local `node_modules` directory rather than the global one).
 
 or by adding it as a dependency in your `package.json`:
-    
-    "dependencies": { "rods-node-util": "latest" }
+
+    "dependencies": { "rods-util": "latest" }
 
 ## Use
 
 To use the module, simply require it:
 
-    var Util = require('rods-node-util');
+    var S = require('rods-util').StringUtil;
     var hello = ' hello.  ';
-    console.log(hello);            // outputs: " hello.  "
-    console.log(Util.trim(hello)); // outputs: "hello."
+    console.log(hello);         // outputs: " hello.  "
+    console.log(S.trim(hello)); // outputs: "hello."
 
 See the test suite for more examples.
 
-## Documentation
+## Legal Stuff
+
+This software and associated materials are made available under the terms of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0), an [OSD-compliant](http://www.opensource.org/licenses/Apache-2.0), non-viral, open source license. Use it in good health.
+
+See the `license.txt` file for details.
+
+
+## DATED MATERIAL FOLLOWS
+
+The documentation below refers to a previous version of the module (published on npm as `rods-node-util`).  The package has been refactored a bit since this was written, but isn't too far off.  Until I get a chance to update these docs, you can see the test suite for up-to-date examples.
 
 ### Utility Methods
 
@@ -40,11 +49,11 @@ See the test suite for more examples.
 An optional "options" map can be passed as a second argument to configure the behavior of the parsing.
 
  * When `options.strip_blanks` is true (the default), blank lines will be excluded from the output array.
- 
+
  * When `options.trim` is true (the default), leading and trailing whitespace will be removed from each line
- 
+
  * When `options.comment_char` is not `null` (the default is `#`), lines for which comment character is the first *non-whitespace* character will be excluded from the output array. (Note that currently a comment that appears at the end of the line isn't recognized.  One can only comment out entire line at a time.)  E.g.,
- 
+
        # this is a comment
                  # this is also a commment
        some text # this is NOT a comment
@@ -67,7 +76,7 @@ Converts an object (map) into an array of name/value pairs, one for each attribu
 
     var object = { foo: 'bar', height: 18, f: function() { return new Date(); } };
     var array = Util.object_to_array(object);
-    console.log(array); 
+    console.log(array);
     // yields something like:
     // [ [ 'foo', 'bar'], [ 'height', 18 ], [ 'f', [Function] ] ]
 
@@ -83,7 +92,7 @@ Returns an array containing the value of each attribute in the given object.  (S
 
     var object = { foo: 'bar', height: 18, f: function() { return new Date(); } };
     var values = Util.object_values(object);
-    console.log(values); 
+    console.log(values);
     // yields something like:
     // [ 'bar', 18, [Function] ]
 
@@ -128,9 +137,9 @@ Accepts five functions as parameters:
  * `done` - called at the end of the loop (after `condition` returns `false`)
 
 Only the `action` method accepts a parameter.  Only the `condition` method returns a value.
- 
+
 For example, the simple loop:
- 
+
     for(var i=0; i<10; i++) { console.log(i); }
     console.log("I'm done.");
 
@@ -161,7 +170,7 @@ Accepts three parameters:
 For example:
 
     var list = [ 1, 2, 3, 4 ]
-    actn = function(value,index,list,next) { 
+    actn = function(value,index,list,next) {
       console.log("The element #{value} is at position #{index}");
       next();
     }
@@ -177,7 +186,7 @@ For a given synchronous function `f`, with the signature:
 returns a new function `g`, with the signature:
 
     g(a,b,c,...,callback)
-    
+
 that is equivalent to:
 
     callback(f(a,b,c,...));
@@ -197,7 +206,7 @@ The `Stopwatch` can be used directly:
     console.log(" started at ",timer.start_time);   // start_time is a Date
     console.log(" finished at ",timer.finish_time); // finish_time is a Date
     console.log(" took ",timer.elapsed_time," milliseconds."); // elapsed_time is a number (finish_time - start_time)
-    
+
 It can also "wrap" a synchronous method call:
 
     var timer = Util.Stopwatch.time_sync(doSomething);
@@ -215,9 +224,3 @@ or an asynchronous method call:
       console.log(" took ",timer.elapsed_time," milliseconds.");
     }
     Util.Stopwatch.time_async(doSomething,report);
-
-## Legal Stuff
-
-This software and associated materials are made available under the terms of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0), an [OSD-compliant](http://www.opensource.org/licenses/Apache-2.0), non-viral, open source license. Use it in good health.
-
-See the `license.txt` file for details.

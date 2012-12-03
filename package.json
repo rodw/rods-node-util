@@ -1,12 +1,12 @@
 {
-  "name"            : "rods-node-util" ,
+  "name"            : "rods-util" ,
   "description"     : "A collection of small utility methods.",
   "keywords"        : ["utility","util","functor","asynchronous","synchronous","function","library","helper","reuse","common","fork","throttle"],
   "homepage"        : "https://github.com/rodw/rods-node-util",
   "repository"      : {"type": "git", "url": "git://github.com/rodw/rods-node-util.git"},
   "bugs"            : "https://github.com/rodw/rods-node-util/issues",
   "author"          : "Rodney Waldhoff (http://heyrod.com/)",
-  "version"         : "0.3.0" ,
+  "version"         : "0.4.0" ,
   "main"            : "lib/index.js",
   "devDependencies" : {
     "coffee-script"   : "latest",
