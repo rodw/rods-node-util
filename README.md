@@ -31,9 +31,138 @@ See the test suite for more examples.
 
 ## Documentation
 
-The following is a description of *some* of the methods available within this package.
+*note: this documentation is incomplete. it is a work in progress.*
 
-See the test suite (`./test/*.coffee`) for more examples.
+
+The `rods-util` module is divided into several indepenent collections of utility methods.
+
+Currently (as of version 0.4.0) there are five collections:
+
+1. `ContainerUtil` - provides utility methods that operate on containers like Arrays and Maps.
+
+2. `FileUtil` - provides utility methods that operate on Files and related objects.
+
+3. `FunctorUtil` - provides utility methods that manipulate functions and support function-oriented programming. (Here is where you'll find things like function composition, asynchronous loops, etc.)
+
+4. `Stopwatch` - is a simple timer that can be used to time synchronous and asynchronous activities.
+
+5. `StringUtil` - provides utility methods that operate on Strings.
+
+Each is described in more detail below.
+
+(These documents *may* be incomplete or slightly out-of-date. See the test suite (`./test/*.coffee`) for more examples and/or a more comprehensive and up-to-date description.)
+
+### ContainerUtil
+
+`ContainerUtil` provides utility methods that operate on containers like Arrays and Maps.
+
+#### Importing
+
+To import the `ContainerUtil`:
+
+```javascript
+var CU = require('rods-util').ContainerUtil;
+```
+
+#### Methods
+
+##### clone(map)
+
+Creates a (shallow) copy of a map or object.
+
+Example:
+
+```javascript
+var original = { a: 1, b: 'two' };
+var clone = CU.clone(original);
+
+console.log('original.a is',original.a); // outputs: "original.a is 1"
+console.log('clone.a is',clone.a);       // outputs: "clone.a is 1"
+
+clone.a = 2
+console.log('original.a is',original.a); // outputs: "original.a is 1"
+console.log('clone.a is',clone.a);       // outputs: "clone.a is 2"
+```
+
+##### deep_clone(map)
+
+Creates a (deep) copy of a map or object.
+
+Example:
+
+```javascript
+var original = { a: 1, b: 'two', c: { x:'alpha', y:'beta' } };
+var clone = CU.deep_clone(original);
+console.log('original.c.x is',original.c.x); // outputs: "original.c.x is alpha"
+console.log('clone.c.x is',clone.c.x);       // outputs: "clone.c.x is alpha"
+clone.c.x = 'gamma'
+console.log('original.c.x is',original.c.x); // outputs: "original.c.x is alpha"
+console.log('clone.c.x is',clone.c.x);       // outputs: "clone.c.x is gamma
+```
+
+##### object_to_array(obj)
+
+Creates an array of name/value pairs from an object or map.
+
+Example:
+
+```javascript
+var m = { a: 1, b: 'two' };
+var a = CU.object_to_array(m);
+console.log(a); // outputs:  [ ['a',1], ['b','two'] ]
+```
+
+##### map_to_array(obj)
+
+An alias for `object_to_array` (which see).
+
+##### object_values(obj)
+
+Convert an object (map) into an array of values.
+
+Example:
+
+```javascript
+var m = { a: 1, b: 'two' };
+var a = CU.object_vales(m);
+// Array a is now:  [ 1, 'two' ]
+```
+
+##### frequency_count
+
+Converts an array into a map whose keys are the unique elements in the array and whose values are the number of times the element appears in array.
+
+Example:
+
+```javascript
+var a = [ 'a', 'b', 'c', 'b', 'c', 'b' ];
+var c = CU.frequency_count(a);
+console.log(c); // outputs: { a:1, b:3, c:2 }
+```
+
+##### sort_by_value
+
+Converts a map into an array of name/value pairs, ordered by value.
+
+Example:
+
+```javascript
+var m = { a:2, c:1, b:3 };
+var a = CU.sort_by_value(m);
+console.log(a); // outputs: [ ['c',1], ['a',2], ['b',3] ]
+```
+
+##### sort_by_key
+
+Converts a map into an array of name/value pairs, ordered by name (key).
+
+Example:
+
+```javascript
+var m = { a:2, c:1, b:3 };
+var a = CU.sort_by_key(m);
+console.log(a); // outputs: [ ['a',2], ['b',3], ['c',1] ]
+```
 
 ### FileUtil
 
