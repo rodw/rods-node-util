@@ -445,7 +445,7 @@ FnU.fork methods, arguments, (results)->
 
 ##### throttled_fork(max,methods,args_for_methods,callback)
 
-Just like `fork`, but ensuress no more than `max` of the methods are running at the same time.
+Just like `fork`, but ensures no more than `max` of the methods are running at the same time.
 
 ### StringUtil
 
