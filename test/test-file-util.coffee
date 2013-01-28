@@ -45,3 +45,15 @@ describe "FileUtil",->
         (result.shift()).should.equal line
       result.length.should.equal 0
       done()
+
+  describe 'file_to_array',->
+    it "makes robust configuration or data files easy",(done)->
+      U.file_to_array DATA_FILE, null, (err,result)->
+        expected = [ 'line 1',
+                     'line 2',
+                     'line 4',
+                     'line 7'  ]
+        for line in expected
+          (result.shift()).should.equal line
+        result.length.should.equal 0
+        done()

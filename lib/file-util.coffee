@@ -18,5 +18,12 @@ class FileUtil
   file_to_array_sync:(filename,options)->
     return StringUtil.string_to_array(@file_to_string_sync(filename,options?.encoding),options)
 
+  file_to_array:(filename,options,callback)->
+    @file_to_string filename, options?.encoding, (err,contents)->
+      if err?
+        callback(err,null)
+      else
+        callback(null,StringUtil.string_to_array(contents,options))
+
 exports = exports ? this
 exports.FileUtil = new FileUtil()
