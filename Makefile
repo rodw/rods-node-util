@@ -113,7 +113,7 @@ publish-module: module
 	$(NPM_EXE) publish $(MODULE_DIR)
 
 test-module-install: clean-test-module-install js test docs coverage module
-	mkdir ../testing-module-install; cd ../testing-module-install; npm install "$(CURDIR)/module"; node -e "require('assert').ok(require('rods-node-util').trim(' abc ') == 'abc')" && cd $(CURDIR) && rm -r $(RM_DASH_I) ../testing-module-install && echo "IT WORKED."
+	mkdir ../testing-module-install; cd ../testing-module-install; npm install "$(CURDIR)/module"; node -e "require('assert').ok(require('rods-util').StringUtil.trim(' abc ') == 'abc')" && cd $(CURDIR) && rm -r $(RM_DASH_I) ../testing-module-install && echo "IT WORKED."
 
 $(NODE_MODULES): $(PACKAGE_JSON)
 	$(NPM_EXE) prune
