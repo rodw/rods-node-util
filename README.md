@@ -31,22 +31,19 @@ See the test suite for more examples.
 
 ## Documentation
 
-*note: this documentation is incomplete. it is a work in progress.*
-
-
-The `rods-util` module is divided into several indepenent collections of utility methods.
+The module is divided into several independent collections of utility methods.
 
 Currently (as of version 0.4.0) there are five collections:
 
-1. `ContainerUtil` - provides utility methods that operate on containers like Arrays and Maps.
+1. ***ContainerUtil*** - provides utility methods that operate on containers like Arrays and Maps.
 
-2. `FileUtil` - provides utility methods that operate on Files and related objects.
+2. ***FileUtil*** - provides utility methods that operate on Files and related objects.
 
-3. `FunctorUtil` - provides utility methods that manipulate functions and support function-oriented programming. (Here is where you'll find things like function composition, asynchronous loops, etc.)
+3. ***FunctorUtil*** - provides utility methods that manipulate functions and support function-oriented programming. (Here is where you'll find things like function composition, asynchronous loops, etc.)
 
-4. `Stopwatch` - is a simple timer that can be used to time synchronous and asynchronous activities.
+4. ***Stopwatch*** - is a simple timer that can be used to time synchronous and asynchronous activities.
 
-5. `StringUtil` - provides utility methods that operate on Strings.
+5. ***StringUtil*** - provides utility methods that operate on Strings.
 
 Each is described in more detail below.
 
@@ -97,7 +94,7 @@ console.log('original.c.x is',original.c.x); // outputs: "original.c.x is alpha"
 console.log('clone.c.x is',clone.c.x);       // outputs: "clone.c.x is alpha"
 clone.c.x = 'gamma'
 console.log('original.c.x is',original.c.x); // outputs: "original.c.x is alpha"
-console.log('clone.c.x is',clone.c.x);       // outputs: "clone.c.x is gamma
+console.log('clone.c.x is',clone.c.x);       // outputs: "clone.c.x is gamma"
 ```
 
 ##### object_to_array(obj)
@@ -164,20 +161,291 @@ var a = CU.sort_by_key(m);
 console.log(a); // outputs: [ ['a',2], ['b',3], ['c',1] ]
 ```
 
+
 ### FileUtil
 
-#### file_to_string(filename,[encoding],callback) / file_to_string_sync(filename,[encoding])
+`FileUtil` provides utility methods that operate on files and related objects
+
+#### Importing
+
+To import the `FileUtil`:
+
+```javascript
+var FU = require('rods-util').FileUtil;
+```
+
+#### Methods
+
+##### file_to_string(filename,[encoding],callback)
 
 Read the file at `filename` into a string.
 
 ```javascript
-var F = require('rods-util').FileUtil
-str = file_to_string_sync('MY-FILE.TXT');
+var callback = function(err,contents) {
+  if(err) {
+    // an error occured
+  } else {
+    // process contents
+  }
+};
+FU.file_to_string('MY-FILE.TXT',callback);
 ```
 
-#### file_to_array_sync(filename,options)
+##### file_to_string_sync(filename,[encoding])
 
-A convenience method that combines `FileUtil.file_to_string_sync` and `StringUtil.string_to_array`.
+A synchronous version of `file_to_string`.
+
+```javascript
+var contents = FU.file_to_string_sync('MY-FILE.TXT');
+```
+
+##### file_to_array(filename,options)
+
+A convenience method that combines `FileUtil.file_to_string` and `StringUtil.string_to_array`.
+
+```javascript
+var callback = function(err,lines) {
+  if(err) {
+    // an error occured
+  } else {
+    // process lines
+  }
+};
+FU.file_to_array('MY-FILE.TXT',callback);
+```
+
+Note that the `options` map may contain an encoding as well as the various options supported by `string_to_array` (which see).
+
+##### file_to_array_sync(filename,options)
+
+A synchronous version of `file_to_array`.
+
+```javascript
+var lines = FU.file_to_array_sync('MY-FILE.TXT');
+```
+
+### FunctorUtil
+
+#### Importing
+
+To import the `FunctorUtil`:
+
+```javascript
+var FnU = require('rods-util').FunctorUtil;
+```
+
+#### Predicate Methods
+
+Predicate methods provide utilties that operate on predicates (functions that return a boolean (`true`/`false`) value).
+
+##### true()
+
+Returns a function that yields a constant `true`:
+
+```javascript
+var predicate = FnU.true();
+console.log( predicate() ); // outputs: true
+```
+
+##### false()
+
+Returns a function that yields a constant `false`:
+
+```javascript
+var predicate = FnU.false();
+console.log( predicate() ); // outputs: false
+```
+
+##### not(predicate)
+
+Returns a function that yields the opposite of the given predicates.
+
+```javascript
+var yes = FnU.true();
+var predicate = FnU.not(yes);
+console.log( predicate() ); // outputs: false
+```
+
+##### and(predicates...)
+
+Returns a function that yields `true` if and only if all the given predicates yield `true`.
+
+```javascript
+var p1 = FnU.true();
+var p2 = FnU.false();
+var p3 = FnU.true();
+var predicate = FnU.and( p1, p2, p3 );
+console.log( predicate() ); // outputs: false
+var another = FnU.and( p1, p3 );
+console.log( another() ); // outputs: true
+```
+
+##### or(predicates...)
+
+Returns a function that yields `true` if *any* of the given predicates yield `true`.
+
+```javascript
+var p1 = FnU.true();
+var p2 = FnU.false();
+var p3 = FnU.false();
+var predicate = FnU.or( p1, p2, p3 );
+console.log( predicate() ); // outputs: true
+var another = FnU.and( p2, p3 );
+console.log( another() ); // outputs: false
+```
+
+##### xor(predicates...)
+
+Returns a function that yields `true` if *exactly one* of the given predicates yield `true`.
+
+```javascript
+var p1 = FnU.true();
+var p2 = FnU.false();
+var p3 = FnU.true();
+var p4 = FnU.false();
+var predicate = FnU.or( p1, p2, p4 );
+console.log( predicate() ); // outputs: true
+var another = FnU.and( p1, p2, p3 );
+console.log( another() ); // outputs: false
+```
+
+#### Function Methods
+
+Function methods provide utilties that operate on functions.
+
+##### transpose_arguments(function)
+
+Given a function `f(a,b)` returns a function equivalent to `f(b,a)`.
+
+Note that any arguments after the first two remain unchanged.
+
+##### reverse_arguments(function)
+
+Given a function `f(a,b,c,...,z)` returns a function equivalent to `f(z,...c,b,a)`.
+
+##### compose(function,function,...)
+
+Given the functions `f` and `g`, returns a function equivalent to `f(g())`.
+
+Given the functions `f`, `g` and `h`, returns a function equivalent to `f(g(h()))`, and so on.
+
+##### for(init,condition,action,step,whendone)
+
+Provides a functor-based for-loop.
+
+Accepts 5 function-valued parameters:
+
+ * *init* - an initialization function (no arguments passed, no return value is expected)
+ * *condition* - a predicate that indicates whether we should continue looping (no arguments passed, a boolean value is expected to be returned)
+ * *action* - the action to take in each pas through the loop (no arguments passed, no return value is expected)
+ * *step* - called at the end of every `action`, prior to `condition`  (no arguments passed, no return value is expected)
+ * *whendone* - called at the end of the loop (when `condition` returns `false`), (no arguments passed, no return value is expected).
+
+This method largely exists for symmetry with `for_async`.
+
+##### for_async(init,condition,action,step,whendone)
+
+Executes an asynchronous for-loop.
+
+Accepts 5 function-valued parameters:
+
+ * *init* - an initialization function (no arguments passed, no return value is expected)
+ * *condition* - a predicate that indicates whether we should continue looping (no arguments passed, a boolean value is expected to be returned)
+ * *action* - the action to take in each pas through the loop (no arguments passed, no return value is expected)
+ * *step* - called at the end of every `action`, prior to `condition`  (no arguments passed, no return value is expected)
+ * *whendone* - called at the end of the loop (when `condition` returns `false`), (no arguments passed, no return value is expected).
+
+For example, the loop:
+
+```javascript
+for(var i=0; i<10; i++) { console.log(i); }
+```
+
+Could be implemented as:
+
+```javascript
+var i = 0;
+init = function() { i = 0; };
+cond = function() { return i < 10; };
+actn = function(next) { console.log(i); next(); };
+incr = function() { i = i + 1; };
+done = function() { };
+for_async(init,cond,actn,incr,done);
+```
+
+##### for_each(list,action,whendone)
+
+Provides a functor-based for-each-loop.
+
+Accepts 3 parameters:
+
+ * *list* - the array to iterate over
+ * *action* - the function indicating the action to take (with the signature `(value,index,list)`)
+ * *whendone* - called at the end of the loop
+
+This method doesn't add much value over the built-in `Array.forEach`, but exists for symmetry with `for_each_async`.
+
+##### for_each_async(list,action,whendone)
+
+Executes an asynchronous for-each loop.
+
+Accepts 3 parameters:
+
+ * *list* - the array to iterate over
+ * *action* - the function indicating the action to take (with the signature `(value,index,list)`)
+ * *whendone* - called at the end of the loop
+
+This method largely exists for symmetry with `for_each_async`.
+
+For example, the loop
+
+```coffeescript
+[0..10].foreach (elt,index,array)-> console.log elt
+```
+
+(That's in CoffeeScript, not JavaScript.)
+
+Could be implemented as:
+
+```coffeescript
+for_each_async [0..10], (elt,index,array,next)->
+  console.log elt
+  next()
+```
+
+##### add_callback(function)
+
+For a given synchronous function `f(a,b,c,...)`, returns a new function `g(a,b,c,...,callback)` that is equivalent to `callback(f(a,b,c,...))`.
+
+The resulting method isn't asynchronous, but approximates the method signature and control flow  used by asynchronous methods. This makes it easy to use a synchronous method where an asynchronous one is expected.
+
+##### fork(methods,args_for_methods,callback)
+
+Invokes each of the given asynchronous `methods` immediately (passing the corresponding `args_for_methods`, if any), and collects the response from each.
+
+When all methods have invoked their callbacks, the specified `callback` is invoked, passing an array containing the callback arguments from each method.
+
+For example:
+
+```coffeescript
+sum       = (a,b,callback)->callback(a+b)
+product   = (a,b,callback)->callback(a*b)
+identity  = (a,b,callback)->callback(a,b)
+
+methods   = [ sum, product, identity ]
+arguments = [ [ 3, 4], [ 3, 4 ], [ 3, 4 ] ]
+
+FnU.fork methods, arguments, (results)->
+ console.log results[0] # yields: 7
+ console.log results[1] # yields: 12
+ console.log results[3] # yields: [ 3, 4 ]
+```
+
+(That's in CoffeeScript, not JavaScript.)
+
+##### throttled_fork(max,methods,args_for_methods,callback)
+
+Just like `fork`, but ensuress no more than `max` of the methods are running at the same time.
 
 ### StringUtil
 
