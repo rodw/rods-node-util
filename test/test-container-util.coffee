@@ -92,7 +92,31 @@ describe 'ContainerUtil', ->
       done()
 
   describe 'clone',->
-    it 'creates a copy of the given map',(done)->
+    it 'creates a copy of non-object types',(done)->
+      objects = [ 'a string', 3, 3.14159, console.log, true, false ]
+      for obj in objects
+        clone = U.clone(obj)
+        clone.should.equal obj
+        (typeof clone).should.equal (typeof obj)
+        clone.toString().should.equal obj.toString()
+      done()
+
+    it 'creates a copy of array types',(done)->
+      obj = [ 1, 1, 3, 5, 8, 11, 'fib(n)', true, 3.14159, console.log ]
+      clone = U.clone(obj)
+      (typeof clone).should.equal (typeof obj)
+      clone.toString().should.equal obj.toString()
+      for x,i in obj
+        clone[i].should.equal x
+        clone[i].toString().should.equal x.toString()
+      done()
+
+    it 'handles null',(done)->
+      ((U.clone(null))?).should.not.be.ok
+      ((U.clone([null]))[0]?).should.not.be.ok
+      done()
+
+    it 'creates a copy of map (object) types',(done)->
       object_one = { a:"alpha", b:"beta" }
       clone = U.clone(object_one)
       clone.a.should.equal object_one.a
@@ -103,7 +127,7 @@ describe 'ContainerUtil', ->
       clone.a.should.not.equal object_one.a
       done()
 
-    it 'creates a *shallow* copy of the given map',(done)->
+    it 'creates a *shallow* copy',(done)->
       object_one = { a:"alpha", b:"beta" }
       object_two = { x:9, y:12 }
       array_of_numbers = [ 1, 2, 3, 4 ]
@@ -120,6 +144,63 @@ describe 'ContainerUtil', ->
       done()
 
   describe 'deep_clone',->
+    it 'creates a copy of non-object types',(done)->
+      objects = [ 'a string', 3, 3.14159, console.log, true, false ]
+      for obj in objects
+        clone = U.deep_clone(obj)
+        clone.should.equal obj
+        (typeof clone).should.equal (typeof obj)
+        clone.toString().should.equal obj.toString()
+      done()
+
+    it 'creates a copy of array types',(done)->
+      obj = [ 1, 1, 3, 5, 8, 11, 'fib(n)', true, 3.14159, console.log ]
+      clone = U.deep_clone(obj)
+      (typeof clone).should.equal (typeof obj)
+      clone.toString().should.equal obj.toString()
+      for x,i in obj
+        clone[i].should.equal x
+        clone[i].toString().should.equal x.toString()
+      done()
+
+
+    it 'handles deeply nested objects',(done)->
+      obj = [
+        'a string',
+        3,
+        3.14159,
+        console.log,
+        false,
+        [ 1, 1, 3, 5, 8, 11, 'fib(n)', true, 3.14159, console.log, { foo:'bar'} ],
+        { a:1, b:[ 1, 1, 3, 5, 8, 11, 'fib(n)', true, 3.14159, console.log, { foo:'bar'} ] }
+      ]
+      clone = U.deep_clone(obj)
+      (typeof clone).should.equal (typeof obj)
+      clone.toString().should.equal obj.toString()
+      for x,i in obj
+        (typeof clone[i]).should.equal(typeof x)
+        clone[i].toString().should.equal x.toString()
+        if x instanceof Array
+          for y, j in x
+            (typeof clone[i][j]).should.equal(typeof y)
+            clone[i][j].toString().should.equal y.toString()
+        else if typeof x is 'object'
+          for n, v of x
+            (typeof clone[i][n]).should.equal(typeof v)
+            clone[i][n].toString().should.equal v.toString()
+
+      clone[6].b[10].foo.should.equal('bar')
+      obj[6].b[10].foo.should.equal('bar')
+      clone[6].b[10].foo = 'not bar'
+      obj[6].b[10].foo.should.equal('bar')
+
+      done()
+
+    it 'handles null',(done)->
+      ((U.deep_clone(null))?).should.not.be.ok
+      ((U.deep_clone([null]))[0]?).should.not.be.ok
+      done()
+
     it 'creates a copy of the given map',(done)->
       object_one = { a:"alpha", b:"beta" }
       clone = U.deep_clone(object_one)
@@ -147,6 +228,21 @@ describe 'ContainerUtil', ->
       (compound_object.list[0]).should.not.equal 'a new value'
       clone.children[0].a = 'not alpha'
       (compound_object.children[0].a).should.not.equal 'not alpha'
+      done()
+
+    it 'copies arrays correctly',(done)->
+      console.log U.clone("foo")
+      console.log U.deep_clone("foo")
+      console.log U.deep_clone([1,2,3,4])
+
+      # object_one = { a:"alpha", b:"beta", c:[1,2,3,['a','b','c','d']] }
+      # clone = U.deep_clone(object_one)
+      # orig_as_string =
+      # console.log typeof object_one.c
+      # console.log object_one.c
+      # console.log typeof clone.c
+      # console.log clone.c
+      # 1.should.equal 2
       done()
 
   describe 'comparator',->

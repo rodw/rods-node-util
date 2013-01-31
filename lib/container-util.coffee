@@ -1,18 +1,46 @@
 class ContainerUtil
-  clone:(map)->
-    clone = {}
-    for name,value of map
-      clone[name] = value
-    return clone
+  clone:(x)->
+    if x?
+      switch (typeof x)
+        when 'null','undefined'
+          return x
+        when 'string', 'number', 'function', 'boolean'
+          return x
+        when 'object','array'
+          if Array.isArray(x) or x instanceof Array
+            return [].concat(x)
+          else
+            clone = {}
+            for name,value of x
+              clone[name] = value
+            return clone
+        else
+          return x # generally shouldn't get here
+    else
+      return x
 
-  deep_clone:(map)->
-    clone = {}
-    for name,value of map
-      if typeof value is 'array' || typeof value is 'object'
-        clone[name] = @deep_clone(value)
-      else
-        clone[name] = value
-    return clone
+  deep_clone:(x)->
+    if x?
+      switch (typeof x)
+        when 'null','undefined'
+          return x
+        when 'string', 'number', 'function', 'boolean'
+          return x
+        when 'object','array'
+          if Array.isArray(x) or x instanceof Array
+            clone = []
+            for e in x
+              clone.push @deep_clone(e)
+            return clone
+          else
+            clone = {}
+            for name,value of x
+              clone[name] = @deep_clone(value)
+            return clone
+        else
+          return x # generally shouldn't get here
+    else
+      return x
 
   # `object_to_array` - convert an object (map) into an array of name/value pairs
   object_to_array:(object)->
