@@ -392,7 +392,7 @@ Executes an asynchronous for-each loop.
 Accepts 3 parameters:
 
  * *list* - the array to iterate over
- * *action* - the function indicating the action to take (with the signature `(value,index,list)`)
+ * *action* - the function indicating the action to take (with the signature `(value,index,list,next)`)
  * *whendone* - called at the end of the loop
 
 This method largely exists for symmetry with `for_each_async`.
