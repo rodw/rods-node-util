@@ -6,7 +6,7 @@
   "repository"      : {"type": "git", "url": "git://github.com/rodw/rods-node-util.git"},
   "bugs"            : "https://github.com/rodw/rods-node-util/issues",
   "author"          : "Rodney Waldhoff (http://heyrod.com/)",
-  "version"         : "0.4.3",
+  "version"         : "0.4.4",
   "main"            : "lib/index.js",
   "devDependencies" : {
     "coffee-script"   : "latest",
