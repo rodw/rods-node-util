@@ -255,7 +255,7 @@ describe 'ContainerUtil', ->
   describe 'unflatten_map',->
 
     it 'is the inverse of flatten_map (no option case)',(done)->
-      original = { a:1, b:'two', c:{ d:{e:{f: [1,2,3] } } } }
+      original = { a:1, b:'two', c:{ d:{e:{f: ['x','y','z'] } } } }
       flattened = U.flatten_map(original)
       unflattened = U.unflatten_map(flattened)
       unflattened.a.should.equal 1
@@ -268,9 +268,48 @@ describe 'ContainerUtil', ->
 
     it 'is the inverse of flatten_map (option.array:"as-map" case)',(done)->
       options = {array:'as-map'}
-      original = { a:1, b:'two', c:{ d:{e:{f: [1,2,3] } } } }
+      original = { a:1, b:'two', c:{ d:{e:{f: ['x','y','z'] } } } }
       flattened = U.flatten_map(original,options)
-      unflattend = U.unflatten_map(flattened,options)
+      unflattened = U.unflatten_map(flattened,options)
+      unflattened.a.should.equal 1
+      unflattened.b.should.equal 'two'
+      unflattened.c.d.e.f.length.should.equal 3
+      unflattened.c.d.e.f[0].should.equal 'x'
+      unflattened.c.d.e.f[1].should.equal 'y'
+      unflattened.c.d.e.f[2].should.equal 'z'
+      done()
+
+    it 'is the inverse of flatten_map (option.array:"as-string" case)',(done)->
+      options = {array:'as-string'}
+      original = { a:1, b:'two', c:{ d:{e:{f: ['x','y','z'] } } } }
+      flattened = U.flatten_map(original,options)
+      unflattened = U.unflatten_map(flattened,options)
+      unflattened.a.should.equal 1
+      unflattened.b.should.equal 'two'
+      unflattened.c.d.e.f.length.should.equal 3
+      unflattened.c.d.e.f[0].should.equal 'x'
+      unflattened.c.d.e.f[1].should.equal 'y'
+      unflattened.c.d.e.f[2].should.equal 'z'
+      done()
+
+    it 'is the inverse of flatten_map (option.array:"as-json" case)',(done)->
+      options = {array:'as-json'}
+      original = { a:1, b:'two', c:{ d:{e:{f: ['x','y','z'] } } } }
+      flattened = U.flatten_map(original,options)
+      unflattened = U.unflatten_map(flattened,options)
+      unflattened.a.should.equal 1
+      unflattened.b.should.equal 'two'
+      unflattened.c.d.e.f.length.should.equal 3
+      unflattened.c.d.e.f[0].should.equal 'x'
+      unflattened.c.d.e.f[1].should.equal 'y'
+      unflattened.c.d.e.f[2].should.equal 'z'
+      done()
+
+    it 'is the inverse of flatten_map (option.array:"as-array" case)',(done)->
+      options = {array:'as-array'}
+      original = { a:1, b:'two', c:{ d:{e:{f: ['x','y','z'] } } } }
+      flattened = U.flatten_map(original,options)
+      unflattened = U.unflatten_map(flattened,options)
       unflattened.a.should.equal 1
       unflattened.b.should.equal 'two'
       unflattened.c.d.e.f.length.should.equal 3
