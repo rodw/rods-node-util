@@ -13,6 +13,236 @@ U = require(path.join(LIB_DIR,'container-util')).ContainerUtil
 
 describe 'ContainerUtil', ->
 
+  is_even = (x)->(x%2 is 0)
+  is_odd = (x)->(x%2 is 1)
+
+  describe 'all',->
+    it 'returns true iff the given predicate is true for all elements in the list',(done)->
+      U.all([0,2,4,6,8],is_even).should.be.ok
+      U.all([0,2,4,6,7],is_even).should.not.be.ok
+      U.all([],is_even).should.be.ok
+      U.all([],is_odd).should.be.ok
+      done()
+
+  describe 'any',->
+    it 'returns true iff the given predicate is true for any element in the list',(done)->
+      U.any([0,2,4,6,8],is_even).should.be.ok
+      U.any([0,2,4,6,8],is_odd).should.not.be.ok
+      U.any([0,2,4,6,7],is_even).should.be.ok
+      U.any([0,2,4,6,7],is_odd).should.be.ok
+      U.any([],is_even).should.not.be.ok
+      U.any([],is_odd).should.not.be.ok
+      done()
+
+  describe 'none',->
+    it 'returns true iff the given predicate is true for NO element in the list',(done)->
+      U.none([0,2,4,6,8],is_even).should.not.be.ok
+      U.none([0,2,4,6,8],is_odd).should.be.ok
+      U.none([0,2,4,6,7],is_even).should.not.be.ok
+      U.none([0,2,4,6,7],is_odd).should.not.be.ok
+      U.none([],is_even).should.be.ok
+      U.none([],is_odd).should.be.ok
+      done()
+
+  describe 'count',->
+
+    it 'returns the number of keys in the given object',(done)->
+      U.count({}).should.equal 0
+      U.count({a:1}).should.equal 1
+      U.count({a:1,b:2}).should.equal 2
+      done()
+
+    it 'returns the number of elements in the given array',(done)->
+      U.count([]).should.equal 0
+      U.count([1]).should.equal 1
+      U.count([1,2]).should.equal 2
+      done()
+
+    it 'throws an exception when the given object is null',(done)->
+      (()->U.count(null)).should.throw
+      (()->U.count()).should.throw
+      done()
+
+    it 'throws an exception when the given object is not an object, map or array',(done)->
+      (()->U.count("not a map")).should.throw
+      (()->U.count(true)).should.throw
+      (()->U.count(7)).should.throw
+      (()->U.count(console.log)).should.throw
+      done()
+
+  describe 'shallow_merge',->
+
+    it 'combines the properties of two maps',(done)->
+      a = { property1:'alpha', property3:'gamma' }
+      b = { property2:'beta' }
+      c = U.shallow_merge(a,b)
+      c.property1.should.equal 'alpha'
+      c.property2.should.equal 'beta'
+      c.property3.should.equal 'gamma'
+      (b.hasOwnProperty('property1')).should.not.be.ok
+      (a.hasOwnProperty('property2')).should.not.be.ok
+      (b.hasOwnProperty('property3')).should.not.be.ok
+      done()
+
+    it 'overwrites properties in the first map that appear in the second',(done)->
+      a = { property1:'alpha', property3:'gamma' }
+      b = { property2:'beta', property3:'overwritten' }
+      c = U.shallow_merge(a,b)
+      c.property1.should.equal 'alpha'
+      c.property2.should.equal 'beta'
+      c.property3.should.equal 'overwritten'
+      a.property3.should.equal 'gamma'
+      b.property3.should.equal 'overwritten'
+      done()
+
+    it 'overwrites properties at the root level',(done)->
+      a = { foo: { a:1, b:2} }
+      b = { foo: { b:3, c:4} }
+      c = U.shallow_merge(a,b)
+      c.foo.hasOwnProperty('a').should.not.be.ok
+      c.foo.hasOwnProperty('b').should.be.ok
+      c.foo.hasOwnProperty('c').should.be.ok
+      c.foo.b.should.equal 3
+      c.foo.c.should.equal 4
+      done()
+
+    it 'isn\'t troubled by empty maps',(done)->
+      U.count(U.shallow_merge({},{})).should.equal 0
+      U.shallow_merge({a:1},{}).a.should.equal 1
+      U.shallow_merge({},{a:1}).a.should.equal 1
+      done()
+
+    it 'overwrites with null',(done)->
+      ((U.shallow_merge({a:1},{a:null})).a?).should.not.be.ok
+      done()
+
+    it 'supports an arbitrary number of arguments',(done)->
+      a = { a:1, count:1 }
+      b = { b:2, count:2 }
+      c = { c:3, count:3 }
+      d = { d:4, count:4 }
+      e = { e:5, count:5 }
+      z = U.shallow_merge(a,b,c,d,e)
+      z.a.should.equal 1
+      z.b.should.equal 2
+      z.c.should.equal 3
+      z.d.should.equal 4
+      z.e.should.equal 5
+      z.count.should.equal 5
+      z = U.shallow_merge({},a,{},b,{},{},c,d,{},e,{})
+      z.a.should.equal 1
+      z.b.should.equal 2
+      z.c.should.equal 3
+      z.d.should.equal 4
+      z.e.should.equal 5
+      z.count.should.equal 5
+      done()
+
+  describe 'merge',->
+
+    it 'combines the properties of two maps',(done)->
+      a = { property1:'alpha', property3:'gamma' }
+      b = { property2:'beta' }
+      c = U.merge(a,b)
+      c.property1.should.equal 'alpha'
+      c.property2.should.equal 'beta'
+      c.property3.should.equal 'gamma'
+      (b.hasOwnProperty('property1')).should.not.be.ok
+      (a.hasOwnProperty('property2')).should.not.be.ok
+      (b.hasOwnProperty('property3')).should.not.be.ok
+      done()
+
+    it 'overwrites properties in the first map that appear in the second',(done)->
+      a = { property1:'alpha', property3:'gamma' }
+      b = { property2:'beta', property3:'overwritten' }
+      c = U.merge(a,b)
+      c.property1.should.equal 'alpha'
+      c.property2.should.equal 'beta'
+      c.property3.should.equal 'overwritten'
+      a.property3.should.equal 'gamma'
+      b.property3.should.equal 'overwritten'
+      done()
+
+    it 'merges nested properties ',(done)->
+      a = { foo: { a:1, b:2} }
+      b = { foo: { b:3, c:4} }
+      c = U.merge(a,b)
+      c.foo.hasOwnProperty('a').should.be.ok
+      c.foo.hasOwnProperty('b').should.be.ok
+      c.foo.hasOwnProperty('c').should.be.ok
+      c.foo.b.should.equal 3
+      c.foo.c.should.equal 4
+      done()
+
+    it 'isn\'t troubled by empty maps',(done)->
+      U.count(U.merge({},{})).should.equal 0
+      U.merge({a:1},{}).a.should.equal 1
+      U.merge({},{a:1}).a.should.equal 1
+      done()
+
+    it 'overwrites with null',(done)->
+      ((U.merge( {a:1},     {a:null}     )).a?).should.not.be.ok
+      ((U.merge( {a:{b:1}}, {a:null}     )).a?).should.not.be.ok
+      ((U.merge( {a:{b:1}}, {a:{b:null}} )).a.b?).should.not.be.ok
+      done()
+
+    it 'supports an arbitrary number of arguments',(done)->
+      a = { foo: { a:1 }, count:1 }
+      b = { foo: { b:2 }, count:2 }
+      c = { foo: { c:3 }, count:3 }
+      d = { foo: { d:4 }, count:4 }
+      e = { foo: { e:5 }, count:5 }
+      z = U.merge(a,b,c,d,e)
+      z.foo.a.should.equal 1
+      z.foo.b.should.equal 2
+      z.foo.c.should.equal 3
+      z.foo.d.should.equal 4
+      z.foo.e.should.equal 5
+      z.count.should.equal 5
+      z = U.merge({},a,{},b,{},{},c,d,{},e,{})
+      z.foo.a.should.equal 1
+      z.foo.b.should.equal 2
+      z.foo.c.should.equal 3
+      z.foo.d.should.equal 4
+      z.foo.e.should.equal 5
+      z.count.should.equal 5
+      done()
+
+
+  describe 'deep_merge',->
+    it 'is an alias for merge',(done)->
+      a = { foo: { a:1, b:2} }
+      b = { foo: { b:3, c:4} }
+      c = U.deep_merge(a,b)
+      c.foo.hasOwnProperty('a').should.be.ok
+      c.foo.hasOwnProperty('b').should.be.ok
+      c.foo.hasOwnProperty('c').should.be.ok
+      c.foo.b.should.equal 3
+      c.foo.c.should.equal 4
+      done()
+
+    it 'supports an arbitrary number of arguments',(done)->
+      a = { foo: { a:1 }, count:1 }
+      b = { foo: { b:2 }, count:2 }
+      c = { foo: { c:3 }, count:3 }
+      d = { foo: { d:4 }, count:4 }
+      e = { foo: { e:5 }, count:5 }
+      z = U.deep_merge(a,b,c,d,e)
+      z.foo.a.should.equal 1
+      z.foo.b.should.equal 2
+      z.foo.c.should.equal 3
+      z.foo.d.should.equal 4
+      z.foo.e.should.equal 5
+      z.count.should.equal 5
+      z = U.deep_merge({},a,{},b,{},{},c,d,{},e,{})
+      z.foo.a.should.equal 1
+      z.foo.b.should.equal 2
+      z.foo.c.should.equal 3
+      z.foo.d.should.equal 4
+      z.foo.e.should.equal 5
+      z.count.should.equal 5
+      done()
+
   describe 'is_int',->
     it 'returns true if and only if the given value is or can be parsed as an integer value',(done)->
       # an int
