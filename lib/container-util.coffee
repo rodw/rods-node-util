@@ -56,6 +56,9 @@ class ContainerUtil
     else
       result = @recursive_numeric_map_to_array(result)
 
+    if options?.null? and options.null is 'as-blank'
+      result = @recursive_blank_string_to_null(result)
+
     return result
 
   # returns true if and only if `i` is or can be parsed as an integer value
@@ -73,6 +76,18 @@ class ContainerUtil
       return result
     else
       return null
+
+  recursive_blank_string_to_null:(obj)->
+    if obj?
+      if typeof obj is 'string' and obj is ''
+        obj = null
+      else if Array.isArray(obj)
+        for elt,i in obj
+          obj[i] = @recursive_blank_string_to_null(elt)
+      else if typeof obj is 'object'
+        for n,v of obj
+          obj[n] = @recursive_blank_string_to_null(v)
+    return obj
 
   recursive_numeric_map_to_array:(obj)->
     if not obj?

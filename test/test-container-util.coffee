@@ -318,6 +318,20 @@ describe 'ContainerUtil', ->
       unflattened.c.d.e.f[2].should.equal 'z'
       done()
 
+    it 'is the inverse of flatten_map (option.null:"as-blank" case)',(done)->
+      options = {null:'as-blank'}
+      original = { a:1, b:'', c:{ d:{e:{f: ['x','','z'] } } } }
+      flattened = U.flatten_map(original,options)
+      unflattened = U.unflatten_map(flattened,options)
+      unflattened.a.should.equal 1
+      (unflattened.hasOwnProperty('b')).should.be.ok
+      (unflattened.b?).should.not.be.ok
+      unflattened.c.d.e.f.length.should.equal 3
+      unflattened.c.d.e.f[0].should.equal 'x'
+      (unflattened.c.d.e.f[1]?).should.not.be.ok
+      unflattened.c.d.e.f[2].should.equal 'z'
+      done()
+
     it 'converts an array of name/value pairs into a map',(done)->
       array = [ ['a',1], ['b','two'], ['c',null] ]
       map = U.unflatten_map(array)
