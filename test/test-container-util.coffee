@@ -257,14 +257,26 @@ describe 'ContainerUtil', ->
     it 'is the inverse of flatten_map (no option case)',(done)->
       original = { a:1, b:'two', c:{ d:{e:{f: [1,2,3] } } } }
       flattened = U.flatten_map(original)
-      unflattend = U.unflatten_map(flattened)
-      map = U.unflatten_map(array)
-      map.a.should.equal 1
-      map.b.should.equal 'two'
-      map.c.d.e.f.length.should.equal 3
-      map.c.d.e.f[0].should.equal 'x'
-      map.c.d.e.f[1].should.equal 'y'
-      map.c.d.e.f[2].should.equal 'z'
+      unflattened = U.unflatten_map(flattened)
+      unflattened.a.should.equal 1
+      unflattened.b.should.equal 'two'
+      unflattened.c.d.e.f.length.should.equal 3
+      unflattened.c.d.e.f[0].should.equal 'x'
+      unflattened.c.d.e.f[1].should.equal 'y'
+      unflattened.c.d.e.f[2].should.equal 'z'
+      done()
+
+    it 'is the inverse of flatten_map (option.array:"as-map" case)',(done)->
+      options = {array:'as-map'}
+      original = { a:1, b:'two', c:{ d:{e:{f: [1,2,3] } } } }
+      flattened = U.flatten_map(original,options)
+      unflattend = U.unflatten_map(flattened,options)
+      unflattened.a.should.equal 1
+      unflattened.b.should.equal 'two'
+      unflattened.c.d.e.f.length.should.equal 3
+      unflattened.c.d.e.f[0].should.equal 'x'
+      unflattened.c.d.e.f[1].should.equal 'y'
+      unflattened.c.d.e.f[2].should.equal 'z'
       done()
 
     it 'converts an array of name/value pairs into a map',(done)->
