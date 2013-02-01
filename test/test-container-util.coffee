@@ -12,8 +12,394 @@ U = require(path.join(LIB_DIR,'container-util')).ContainerUtil
 # ## Tests
 
 describe 'ContainerUtil', ->
-  describe 'object_values',->
+
+  describe 'is_int',->
+    it 'returns true if and only if the given value is or can be parsed as an integer value',(done)->
+      # an int
+      U.is_int(-100).should.be.ok
+      U.is_int(-1).should.be.ok
+      U.is_int(0).should.be.ok
+      U.is_int(1).should.be.ok
+      U.is_int(1.0).should.be.ok
+      U.is_int(100).should.be.ok
+      U.is_int('-100').should.be.ok
+      U.is_int('-1').should.be.ok
+      U.is_int('0').should.be.ok
+      U.is_int('1').should.be.ok
+      U.is_int('100').should.be.ok
+      U.is_int('1.0').should.be.ok
+      # not an int
+      U.is_int(NaN).should.not.be.ok
+      U.is_int(true).should.not.be.ok
+      U.is_int('one').should.not.be.ok
+      U.is_int(3.14).should.not.be.ok
+      U.is_int('3.14').should.not.be.ok
+      U.is_int(null).should.not.be.ok
+      # done
+      done()
+
+  describe 'is_nonnegative_int',->
+    it 'returns true if and only if the given value is or can be parsed as an integer value greater than or equal to zero',(done)->
+      # is
+      U.is_nonnegative_int(0).should.be.ok
+      U.is_nonnegative_int(0.0000).should.be.ok
+      U.is_nonnegative_int(1).should.be.ok
+      U.is_nonnegative_int(1.0).should.be.ok
+      U.is_nonnegative_int('0').should.be.ok
+      U.is_nonnegative_int('0.0000').should.be.ok
+      U.is_nonnegative_int('1').should.be.ok
+      U.is_nonnegative_int('1.0').should.be.ok
+      # is not
+      U.is_nonnegative_int(-0.0001).should.not.be.ok
+      U.is_nonnegative_int(0.0001).should.not.be.ok
+      U.is_nonnegative_int(-2).should.not.be.ok
+      U.is_nonnegative_int('-0.0001').should.not.be.ok
+      U.is_nonnegative_int('0.0001').should.not.be.ok
+      U.is_nonnegative_int('-2').should.not.be.ok
+      # done
+      done()
+
+  describe 'numeric_map_to_array',->
+
+    it 'returns the array equivalent of a non-negative-integer-keyed map',(done)->
+      a = U.numeric_map_to_array { '0':'a', '1':'b', '2.0':'c' }
+      Array.isArray(a).should.be.ok
+      a.length.should.equal 3
+      a[0].should.equal 'a'
+      a[1].should.equal 'b'
+      a[2].should.equal 'c'
+      done()
+
+    it 'works with sparse maps',(done)->
+      a = U.numeric_map_to_array { '1':'b', '3':'d' }
+      Array.isArray(a).should.be.ok
+      a.length.should.equal 4
+      (a[0]?).should.not.be.ok
+      a[1].should.equal 'b'
+      (a[2]?).should.not.be.ok
+      a[3].should.equal 'd'
+      done()
+
+    it 'works with empty maps',(done)->
+      a = U.numeric_map_to_array { }
+      Array.isArray(a).should.be.ok
+      a.length.should.equal 0
+      done()
+
+    it 'returns null if precondtions aren\'t met',(done)->
+      should.not.exist U.numeric_map_to_array { '-1': 'z', '0':'a', '1':'b' }
+      should.not.exist U.numeric_map_to_array { 'xyzzy': 'z', '0':'a', '1':'b' }
+      done()
+
+  describe 'flatten_map',->
+
+    it 'converts an simple map into an array of name/value pairs',(done)->
+      map = { a:1, b:'two', c:null }
+      flat = U.flatten_map(map)
+      flat.length.should.equal 3
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c'
+      (flat[2][1]?).should.not.be.ok
+      done()
+
+    it 'converts a nested map into a dotted path array of name/value pairs',(done)->
+      map = { a:1, b:'two', c:{ foo:'bar', d:{e:{f:'g'} } } }
+      flat = U.flatten_map(map)
+      flat.length.should.equal 4
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.foo'
+      flat[2][1].should.equal 'bar'
+      flat[3][0].should.equal 'c.d.e.f'
+      flat[3][1].should.equal 'g'
+      done()
+
+    it 'treats null as null (by default)',(done)->
+      map = { a:1, b:'two', c:{ d:{e:{f: null } } } }
+      flat = U.flatten_map(map)
+      flat.length.should.equal 3
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.d.e.f'
+      (flat[2][1]?).should.not.be.ok
+      done()
+
+    it 'treats null as null when options include {null:"as-null"})',(done)->
+      map = { a:1, b:'two', c:{ d:{e:{f: null } } } }
+      flat = U.flatten_map(map, null:'as-null')
+      flat.length.should.equal 3
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.d.e.f'
+      (flat[2][1]?).should.not.be.ok
+      done()
+
+    it 'treats null as blank when options include {null:"as-blank"})',(done)->
+      map = { a:1, b:'two', c:{ d:{e:{f: null } } } }
+      flat = U.flatten_map(map, null:'as-blank')
+      flat.length.should.equal 3
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.d.e.f'
+      flat[2][1].should.equal ''
+      done()
+
+    it 'treats arrays as maps (by default)',(done)->
+      map = { a:1, b:'two', c:{ d:{e:{f: [1,2,3] } } } }
+      flat = U.flatten_map(map)
+      flat.length.should.equal 5
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.d.e.f.0'
+      flat[2][1].should.equal 1
+      flat[3][0].should.equal 'c.d.e.f.1'
+      flat[3][1].should.equal 2
+      flat[4][0].should.equal 'c.d.e.f.2'
+      flat[4][1].should.equal 3
+      done()
+
+    it 'treats arrays as maps when options include {array:"as-map"}',(done)->
+      map = { a:1, b:'two', c:{ d:{e:{f: [1,2,3] } } } }
+      flat = U.flatten_map(map)
+      flat.length.should.equal 5
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.d.e.f.0'
+      flat[2][1].should.equal 1
+      flat[3][0].should.equal 'c.d.e.f.1'
+      flat[3][1].should.equal 2
+      flat[4][0].should.equal 'c.d.e.f.2'
+      flat[4][1].should.equal 3
+      done()
+
+    it 'treats arrays as arrays when options include {array:"as-array"}',(done)->
+      map = { a:1, b:'two', c:{ d:{e:{f: [1,2,3] } } } }
+      flat = U.flatten_map(map,array:'as-array')
+      flat.length.should.equal 3
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.d.e.f'
+      flat[2][1][0].should.equal 1
+      flat[2][1][1].should.equal 2
+      flat[2][1][2].should.equal 3
+      done()
+
+    it 'treats arrays as strings when options include {array:"as-json"} or {array:"as-string"} ',(done)->
+      map = { a:1, b:'two', c:{ d:{e:{f: [1,2,3] } } } }
+      flat = U.flatten_map(map,array:'as-json')
+      flat.length.should.equal 3
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.d.e.f'
+      flat[2][1].should.equal '[1,2,3]'
+      flat = U.flatten_map(map,array:'as-string')
+      flat.length.should.equal 3
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.d.e.f'
+      flat[2][1].should.equal '[1,2,3]'
+      done()
+
+    it 'supports nested arrays',(done)->
+      map = { a:1, b:'two', c:{ d:{e:{f: [1,2,['t','h','r','e','e']] } } } }
+      flat = U.flatten_map(map)
+      flat.length.should.equal 9
+      flat[0][0].should.equal 'a'
+      flat[0][1].should.equal 1
+      flat[1][0].should.equal 'b'
+      flat[1][1].should.equal 'two'
+      flat[2][0].should.equal 'c.d.e.f.0'
+      flat[2][1].should.equal 1
+      flat[3][0].should.equal 'c.d.e.f.1'
+      flat[3][1].should.equal 2
+      flat[4][0].should.equal 'c.d.e.f.2.0'
+      flat[4][1].should.equal 't'
+      flat[5][0].should.equal 'c.d.e.f.2.1'
+      flat[5][1].should.equal 'h'
+      flat[6][0].should.equal 'c.d.e.f.2.2'
+      flat[6][1].should.equal 'r'
+      flat[7][0].should.equal 'c.d.e.f.2.3'
+      flat[7][1].should.equal 'e'
+      flat[8][0].should.equal 'c.d.e.f.2.4'
+      flat[8][1].should.equal 'e'
+      done()
+
+    it 'throws an error when options.array or options.null is not recognized',(done)->
+      map = { a:1, b:'two', c:{ d:{e:{f: [1,2,3] } } } }
+      (()->U.flatten_map(map,array:'as-mitzelplik')).should.throw()
+      map = { a:1, b:'two', c:{ d:{e:{f: null } } } }
+      (()->U.flatten_map(map,null:'as-mitzelplik')).should.throw()
+      done()
+
+  describe 'unflatten_map',->
+
+    it 'converts an array of name/value pairs into a map',(done)->
+      array = [ ['a',1], ['b','two'], ['c',null] ]
+      map = U.unflatten_map(array)
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      map.hasOwnProperty('c').should.be.ok
+      (map.c?).should.not.be.ok
+      done()
+
+    it 'converts dotted names into nested maps',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d','e'] ]
+      map = U.unflatten_map(array)
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      map.c.d.should.equal 'e'
+      done()
+
+    it 'handles multi-element nested maps properly',(done)->
+      array = [ ['a',1], ['b','two'], ['c.foo','bar'], ['c.d.e.f','g'], ['c.d.x.y',1], ['c.d.x.z',2] ]
+      map = U.unflatten_map(array)
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      map.c.foo.should.equal 'bar'
+      map.c.d.e.f.should.equal 'g'
+      map.c.d.x.y.should.equal 1
+      map.c.d.x.z.should.equal 2
+      done()
+
+    it 'converts numeric keys into arrays (by default)',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d.e.f.0','x'], ['c.d.e.f.1','y'], ['c.d.e.f.2','z'] ]
+      map = U.unflatten_map(array)
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      map.c.d.e.f.length.should.equal 3
+      map.c.d.e.f[0].should.equal 'x'
+      map.c.d.e.f[1].should.equal 'y'
+      map.c.d.e.f[2].should.equal 'z'
+      done()
+
+    it 'converts numeric keys into arrays when options inlclude {array:"as-map"}',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d.e.f.0','x'], ['c.d.e.f.1','y'], ['c.d.e.f.2','z'] ]
+      map = U.unflatten_map(array,{array:'as-map'})
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      map.c.d.e.f.length.should.equal 3
+      map.c.d.e.f[0].should.equal 'x'
+      map.c.d.e.f[1].should.equal 'y'
+      map.c.d.e.f[2].should.equal 'z'
+      done()
+
+    it 'doesn\'t convert numeric keys into arrays when options include {array:"as-string"} ',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d.e.f.0','x'], ['c.d.e.f.1','y'], ['c.d.e.f.2','z'] ]
+      map = U.unflatten_map(array,{array:'as-string'})
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      (Array.isArray(map.c.d.e.f)).should.not.be.ok
+      map.c.d.e.f['0'].should.equal 'x'
+      map.c.d.e.f['1'].should.equal 'y'
+      map.c.d.e.f['2'].should.equal 'z'
+      done()
+
+    it 'doesn\'t convert numeric keys into arrays when options include {array:"as-json"} ',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d.e.f.0','x'], ['c.d.e.f.1','y'], ['c.d.e.f.2','z'] ]
+      map = U.unflatten_map(array,{array:'as-json'})
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      (Array.isArray(map.c.d.e.f)).should.not.be.ok
+      map.c.d.e.f['0'].should.equal 'x'
+      map.c.d.e.f['1'].should.equal 'y'
+      map.c.d.e.f['2'].should.equal 'z'
+      done()
+
+    it 'doesn\'t convert numeric keys into arrays when options include {array:"as-array"} ',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d.e.f.0','x'], ['c.d.e.f.1','y'], ['c.d.e.f.2','z'] ]
+      map = U.unflatten_map(array,{array:'as-string'})
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      (Array.isArray(map.c.d.e.f)).should.not.be.ok
+      map.c.d.e.f['0'].should.equal 'x'
+      map.c.d.e.f['1'].should.equal 'y'
+      map.c.d.e.f['2'].should.equal 'z'
+      done()
+
+    it 'converts array-strings into arrays when options include {array:"as-string"}',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d.e.f','["x","y","z"]'] ]
+      map = U.unflatten_map(array,{array:'as-string'})
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      (Array.isArray(map.c.d.e.f)).should.be.ok
+      map.c.d.e.f[0].should.equal 'x'
+      map.c.d.e.f[1].should.equal 'y'
+      map.c.d.e.f[2].should.equal 'z'
+      done()
+
+    it 'converts array-strings into arrays when options include {array:"as-json"}',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d.e.f','["x","y","z"]'] ]
+      map = U.unflatten_map(array,{array:'as-json'})
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      (Array.isArray(map.c.d.e.f)).should.be.ok
+      map.c.d.e.f[0].should.equal 'x'
+      map.c.d.e.f[1].should.equal 'y'
+      map.c.d.e.f[2].should.equal 'z'
+      done()
+
+    it 'doesn\'t convert array-strings into arrays when options include {array:"as-array"}',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d.e.f','["x","y","z"]'] ]
+      map = U.unflatten_map(array,{array:'as-array'})
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      (Array.isArray(map.c.d.e.f)).should.not.be.ok
+      map.c.d.e.f.should.equal '["x","y","z"]'
+      done()
+
+    it 'preserves array values when options include {array:"as-array"}',(done)->
+      array = [ ['a',1], ['b','two'], ['c.d.e.f',['x','y','z'] ] ]
+      map = U.unflatten_map(array,{array:'as-array'})
+      map.a.should.equal 1
+      map.b.should.equal 'two'
+      (Array.isArray(map.c.d.e.f)).should.be.ok
+      map.c.d.e.f[0].should.equal 'x'
+      map.c.d.e.f[1].should.equal 'y'
+      map.c.d.e.f[2].should.equal 'z'
+      done()
+
+  describe 'values',->
     it 'returns an array of object values',(done)->
+      obj = { alpha:1, beta:2, gamma:3, another:3 }
+      obj.foo = ()->console.log("some function")
+      result = U.values(obj)
+      result.length.should.equal 5
+      (1 in result).should.be.ok
+      (2 in result).should.be.ok
+      (3 in result).should.be.ok
+      found_function = false
+      three_count = 0
+      for v in result
+        if v is 3
+          three_count += 1
+        else if typeof v is 'function'
+          found_function = true
+      found_function.should.be.ok
+      three_count.should.equal 2
+      done()
+
+    it 'a.k.a. object_values',(done)->
       obj = { alpha:1, beta:2, gamma:3, another:3 }
       obj.foo = ()->console.log("some function")
       result = U.object_values(obj)
@@ -30,6 +416,19 @@ describe 'ContainerUtil', ->
           found_function = true
       found_function.should.be.ok
       three_count.should.equal 2
+      done()
+
+  describe 'keys',->
+    it 'returns an array of object keys',(done)->
+      obj = { alpha:1, beta:2, gamma:3, another:3 }
+      obj.foo = ()->console.log("some function")
+      result = U.keys(obj)
+      result.length.should.equal 5
+      ('alpha' in result).should.be.ok
+      ('beta' in result).should.be.ok
+      ('gamma' in result).should.be.ok
+      ('another' in result).should.be.ok
+      ('foo' in result).should.be.ok
       done()
 
   describe 'object_to_array',->
@@ -228,21 +627,6 @@ describe 'ContainerUtil', ->
       (compound_object.list[0]).should.not.equal 'a new value'
       clone.children[0].a = 'not alpha'
       (compound_object.children[0].a).should.not.equal 'not alpha'
-      done()
-
-    it 'copies arrays correctly',(done)->
-      console.log U.clone("foo")
-      console.log U.deep_clone("foo")
-      console.log U.deep_clone([1,2,3,4])
-
-      # object_one = { a:"alpha", b:"beta", c:[1,2,3,['a','b','c','d']] }
-      # clone = U.deep_clone(object_one)
-      # orig_as_string =
-      # console.log typeof object_one.c
-      # console.log object_one.c
-      # console.log typeof clone.c
-      # console.log clone.c
-      # 1.should.equal 2
       done()
 
   describe 'comparator',->
