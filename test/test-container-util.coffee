@@ -482,6 +482,136 @@ describe 'ContainerUtil', ->
       (()->U.flatten_map(map,null:'as-mitzelplik')).should.throw()
       done()
 
+    describe 'circular reference handling',->
+
+      it 'throws an exception by default',(done)->
+        foo = { x:1 }
+        bar = { y:2 }
+        foo.bar = bar
+        bar.foo = foo
+        (()->U.flatten_map(foo)).should.throw()
+        (()->U.flatten_map(bar)).should.throw()
+        done()
+
+      it 'throws an exception when options.when-circular is `throw`',(done)->
+        foo = { x:1 }
+        bar = { y:2 }
+        foo.bar = bar
+        bar.foo = foo
+        (()->U.flatten_map(foo,{'when-circular':'throw'})).should.throw()
+        (()->U.flatten_map(bar,{'when-circular':'throw'})).should.throw()
+        done()
+
+      it 'throws an exception when options.when-circular value is unrecognized',(done)->
+        foo = { x:1 }
+        (()->U.flatten_map(foo)).should.not.throw()
+        (()->U.flatten_map(foo,{'when-circular':'xyzzy'})).should.throw()
+        done()
+
+      it 'ignores circular references when options.when-circular is `skip`',(done)->
+        foo = { x:1 }
+        bar = { y:2 }
+        foo.bar = bar
+        bar.foo = foo
+        flat_foo = U.flatten_map(foo,{'when-circular':'skip'})
+        flat_foo.length.should.equal 2
+        flat_foo[0][0].should.equal 'x'
+        flat_foo[0][1].should.equal 1
+        flat_foo[1][0].should.equal 'bar.y'
+        flat_foo[1][1].should.equal 2
+        flat_bar = U.flatten_map(bar,{'when-circular':'skip'})
+        flat_bar.length.should.equal 2
+        flat_bar[0][0].should.equal 'y'
+        flat_bar[0][1].should.equal 2
+        flat_bar[1][0].should.equal 'foo.x'
+        flat_bar[1][1].should.equal 1
+        done()
+
+      it 'isn\'t bothered by duplicates, just circular references ',(done)->
+        foo = { x:1 }
+        bar = { y:2, foo:foo, also:{foo:foo} }
+        flat_bar = U.flatten_map(bar,{'when-circular':'throw'})
+        flat_bar.length.should.equal 3
+        flat_bar[0][0].should.equal 'y'
+        flat_bar[0][1].should.equal 2
+        flat_bar[1][0].should.equal 'foo.x'
+        flat_bar[1][1].should.equal 1
+        flat_bar[2][0].should.equal 'also.foo.x'
+        flat_bar[2][1].should.equal 1
+        done()
+
+      it 'handles circular references nested in maps',(done)->
+        d = { name:'d' }
+        c = { name:'c', next:d }
+        b = { name:'b', next:c }
+        a = { name:'a', next:b }
+        d.next = a
+        flat = U.flatten_map(a,{'when-circular':'skip'})
+        flat.length.should.equal 4
+        flat[0][0].should.equal 'name'
+        flat[0][1].should.equal 'a'
+        flat[1][0].should.equal 'next.name'
+        flat[1][1].should.equal 'b'
+        flat[2][0].should.equal 'next.next.name'
+        flat[2][1].should.equal 'c'
+        flat[3][0].should.equal 'next.next.next.name'
+        flat[3][1].should.equal 'd'
+        done()
+
+      it 'handles circular references nested in arrays',(done)->
+        d = [ 'd' ]
+        c = [ 'c', d ]
+        b = [ 'b', c ]
+        a = [ 'a', b ]
+        d.push(a)
+        flat = U.flatten_map(a,{'when-circular':'skip','array':'as-map'})
+        flat.length.should.equal 4
+        flat[0][0].should.equal '0'
+        flat[0][1].should.equal 'a'
+        flat[1][0].should.equal '1.0'
+        flat[1][1].should.equal 'b'
+        flat[2][0].should.equal '1.1.0'
+        flat[2][1].should.equal 'c'
+        flat[3][0].should.equal '1.1.1.0'
+        flat[3][1].should.equal 'd'
+        done()
+
+      it 'handles circular references nested in maps and arrays',(done)->
+        d = [ 'd' ]
+        c = [ 'c', {next:d} ]
+        b = [ 'b', {next:c} ]
+        a = [ 'a', {next:b} ]
+        d.push({next:a})
+        flat = U.flatten_map(a,{'when-circular':'skip','array':'as-map'})
+        flat.length.should.equal 4
+        flat[0][0].should.equal '0'
+        flat[0][1].should.equal 'a'
+        flat[1][0].should.equal '1.next.0'
+        flat[1][1].should.equal 'b'
+        flat[2][0].should.equal '1.next.1.next.0'
+        flat[2][1].should.equal 'c'
+        flat[3][0].should.equal '1.next.1.next.1.next.0'
+        flat[3][1].should.equal 'd'
+        done()
+
+      it 'handles circular references nested in maps and arrays (alt case)',(done)->
+        d = [ 'd' ]
+        c = [ 'c', {next:d} ]
+        b = [ 'b', {next:c} ]
+        a = [ 'a', {next:b} ]
+        d.push({next:a})
+        flat = U.flatten_map(c,{'when-circular':'skip','array':'as-map'})
+        flat.length.should.equal 4
+        flat[0][0].should.equal '0'
+        flat[0][1].should.equal 'c'
+        flat[1][0].should.equal '1.next.0'
+        flat[1][1].should.equal 'd'
+        flat[2][0].should.equal '1.next.1.next.0'
+        flat[2][1].should.equal 'a'
+        flat[3][0].should.equal '1.next.1.next.1.next.0'
+        flat[3][1].should.equal 'b'
+        done()
+
   describe 'unflatten_map',->
 
     it 'is the inverse of flatten_map (no option case)',(done)->
