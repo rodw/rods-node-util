@@ -1,5 +1,19 @@
 class ContainerUtil
 
+  # Given one argument, converts an array of name/value pairs into a map.
+  # I.e.,
+  #       { a[0][0]:a[0][1], a[1][0]:a[1][1], ... }
+  # Given two argument, converts an array of names and an array of values into a map.
+  # I.e.,
+  #       { a[0]:b[0], a[1]:b[1], ... }
+  array_to_map:(a,b)->
+    m = { }
+    if b?
+      m[e] = b[i] for e,i in a
+    else
+      m[e[0]] = e[1] for e,i in a
+    return m
+
   # `shallow_merge` - returns an object merging the values of the given objects (properties in objects that appear later in the argument list will overwrite those that appear earlier)
   shallow_merge:(a,b,rest...)->
     if rest?.length > 0

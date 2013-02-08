@@ -13,6 +13,49 @@ U = require(path.join(LIB_DIR,'container-util')).ContainerUtil
 
 describe 'ContainerUtil', ->
 
+  describe 'array_to_map',->
+    it 'converts an array of pairs into a map',(done)->
+      a = [
+        [ 'a', 'alpha' ]
+        [ 'b', 'beta' ]
+        [ 'g', 'gamma' ]
+      ]
+      map = U.array_to_map(a)
+      map.a.should.equal 'alpha'
+      map.b.should.equal 'beta'
+      map.g.should.equal 'gamma'
+      done()
+
+    it 'converts a pair of arrays into a map',(done)->
+      a = [ 'a', 'b', 'g' ]
+      b = [ 'alpha', 'beta', 'gamma' ]
+      map = U.array_to_map(a,b)
+      map.a.should.equal 'alpha'
+      map.b.should.equal 'beta'
+      map.g.should.equal 'gamma'
+      done()
+
+    it 'ignores extra values when processing a pair of arrays',(done)->
+      a = [ 'a', 'b', 'g' ]
+      b = [ 'alpha', 'beta', 'gamma', 'omega' ]
+      map = U.array_to_map(a,b)
+      map.a.should.equal 'alpha'
+      map.b.should.equal 'beta'
+      map.g.should.equal 'gamma'
+      U.count(map).should.equal 3
+      done()
+
+    it 'maps extra keys to null when processing a pair of arrays',(done)->
+      a = [ 'a', 'b', 'g', 'z' ]
+      b = [ 'alpha', 'beta', 'gamma' ]
+      map = U.array_to_map(a,b)
+      map.a.should.equal 'alpha'
+      map.b.should.equal 'beta'
+      map.g.should.equal 'gamma'
+      U.count(map).should.equal 4
+      (map.z?).should.not.be.ok
+      done()
+
   is_even = (x)->(x%2 is 0)
   is_odd = (x)->(x%2 is 1)
 
