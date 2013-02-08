@@ -29,6 +29,10 @@ console.log(S.trim(hello)); // outputs: "hello."
 
 See the test suite for more examples.
 
+## NOTE
+
+New methods are being added to this module all the time.  The documentation below probably isn't complete. See the test suite (`./test/*.coffee`) for more examples and/or a more comprehensive and up-to-date description.)
+
 ## Documentation
 
 The module is divided into several independent collections of utility methods.
@@ -47,7 +51,7 @@ Currently (as of version 0.4.0) there are five collections:
 
 Each is described in more detail below.
 
-(These documents *may* be incomplete or slightly out-of-date. See the test suite (`./test/*.coffee`) for more examples and/or a more comprehensive and up-to-date description.)
+<!-- (These documents *may* be incomplete or slightly out-of-date. See the test suite (`./test/*.coffee`) for more examples and/or a more comprehensive and up-to-date description.) -->
 
 ### ContainerUtil
 
