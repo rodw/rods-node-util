@@ -655,6 +655,11 @@ describe 'ContainerUtil', ->
         flat[3][1].should.equal 'b'
         done()
 
+    it 'returns null when given null',(done)->
+      array = U.flatten_map(null)
+      should.not.exist(array)
+      done()
+
   describe 'unflatten_map',->
 
     it 'is the inverse of flatten_map (no option case)',(done)->
@@ -858,6 +863,11 @@ describe 'ContainerUtil', ->
       map.c.d.e.f[0].should.equal 'x'
       map.c.d.e.f[1].should.equal 'y'
       map.c.d.e.f[2].should.equal 'z'
+      done()
+
+    it 'returns null when given null',(done)->
+      map = U.unflatten_map(null)
+      should.not.exist(map)
       done()
 
   describe 'values',->

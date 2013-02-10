@@ -99,70 +99,68 @@ class ContainerUtil
   # Also see `unflatten_map`, which reverses this operation.
   #
   flatten_map:(map,options={})->
+    unless map?
+      return null
+    else
+      # check arguments. we do this here because:
+      # 1. we want an exception thrown for bad arguments no matter whether the option is encountered during processing
+      # 2. we want to do the checks as few times as possible
+      if options? and not options?.parents?
+        options.parents = [ map ]
+        if options['when-circular']? and not (options['when-circular'] in ['throw','skip'])
+          throw new Error "Unexpected value for options['when-circular'].  Found \"#{options['when-circular']}\"."
+        if options.array? and not (options.array in ['as-array','as-json','as-string','as-map'])
+          throw new Error "Unexpected value for options['array'].  Found \"#{options['array']}\"."
 
-    # check arguments. we do this here because:
-    # 1. we want an exception thrown for bad arguments no matter whether the option is encountered during processing
-    # 2. we want to do the checks as few times as possible
-    if options? and not options?.parents?
-
-      options.parents = [ map ]
-
-
-      if options['when-circular']? and not (options['when-circular'] in ['throw','skip'])
-        throw new Error "Unexpected value for options['when-circular'].  Found \"#{options['when-circular']}\"."
-      if options.array? and not (options.array in ['as-array','as-json','as-string','as-map'])
-        throw new Error "Unexpected value for options['array'].  Found \"#{options['array']}\"."
-
-      if options.null? and not (options.null in ['as-null','as-blank'])
-        throw new Error "Unexpected value for options['null'].  Found \"#{options['null']}\"."
-
-    result = []
-    for n,v of map
-      if v?
-        switch (typeof v)
-          when 'null','undefined'
-            result.push([n,v])
-          when 'string', 'number', 'function', 'boolean'
-            result.push([n,v])
-          when 'object','array'
-            options = options ? {}
-            options.parents = options.parents ? []
-            if v in options.parents
-              if (not options?['when-circular']?) or (options['when-circular'] is 'throw')
-                throw new Error "Found circular reference at name #{n} within #{map}."
-              # else if options?['when-circular'] is 'skip'
-                # ignore it and go on to the next element
-              # else
-              #   throw new Error "Unexpected value for options['when-circular'].  Found \"#{options['when-circular']}\"."
-            else
-              options.parents.push(v)
-              if Array.isArray(v) or v instanceof Array
-                if options?.array is 'as-array'
-                  result.push([n,v])
-                else if options?.array is 'as-json' or options?.array is 'as-string'
-                  result.push([n,JSON.stringify(v)])
-                else if options?.array is 'as-map' or not options?.array?
+        if options.null? and not (options.null in ['as-null','as-blank'])
+          throw new Error "Unexpected value for options['null'].  Found \"#{options['null']}\"."
+      result = []
+      for n,v of map
+        if v?
+          switch (typeof v)
+            when 'null','undefined'
+              result.push([n,v])
+            when 'string', 'number', 'function', 'boolean'
+              result.push([n,v])
+            when 'object','array'
+              options = options ? {}
+              options.parents = options.parents ? []
+              if v in options.parents
+                if (not options?['when-circular']?) or (options['when-circular'] is 'throw')
+                  throw new Error "Found circular reference at name #{n} within #{map}."
+                # else if options?['when-circular'] is 'skip'
+                  # ignore it and go on to the next element
+                # else
+                #   throw new Error "Unexpected value for options['when-circular'].  Found \"#{options['when-circular']}\"."
+              else
+                options.parents.push(v)
+                if Array.isArray(v) or v instanceof Array
+                  if options?.array is 'as-array'
+                    result.push([n,v])
+                  else if options?.array is 'as-json' or options?.array is 'as-string'
+                    result.push([n,JSON.stringify(v)])
+                  else if options?.array is 'as-map' or not options?.array?
+                    nested = @flatten_map(v,options)
+                    for elt in nested
+                      result.push ["#{n}.#{elt[0]}", elt[1]]
+                  # else
+                  #   throw new Error("option array=\"#{options.array}\" not recognized")
+                else
                   nested = @flatten_map(v,options)
                   for elt in nested
                     result.push ["#{n}.#{elt[0]}", elt[1]]
-                # else
-                #   throw new Error("option array=\"#{options.array}\" not recognized")
-              else
-                nested = @flatten_map(v,options)
-                for elt in nested
-                  result.push ["#{n}.#{elt[0]}", elt[1]]
-              options.parents.pop()
-          else
-            console.warn "WARNING: Didn't expect object of type #{typeof v}."
+                options.parents.pop()
+            else
+              console.warn "WARNING: Didn't expect object of type #{typeof v}."
+              result.push([n,v])
+        else
+          if options?.null is 'as-blank'
+            result.push([n,''])
+          else if options?.null is 'as-null' or not options?.null?
             result.push([n,v])
-      else
-        if options?.null is 'as-blank'
-          result.push([n,''])
-        else if options?.null is 'as-null' or not options?.null?
-          result.push([n,v])
-        # else
-        #   throw new Error("option null=\"#{options.null}\" not recognized")
-    return result
+          # else
+          #   throw new Error("option null=\"#{options.null}\" not recognized")
+      return result
 
   # `unflatten_map` - Converts an array of name-value pairs (like those generated by `flatten_map`) into a map.
   #
@@ -194,25 +192,28 @@ class ContainerUtil
   #   * when `as-null`, no special `null` handling is used (so any null values that appear in the input array pass through unchanged)
   #
   unflatten_map:(array,options)->
-    result = {}
-    for pair in array
-      path = (pair[0]).split('.')
-      name = path.pop()
-      cur = result
-      for segment in path
-        cur = cur[segment] = cur[segment] ? {}
-      cur[name] = pair[1]
-    if options?.array?
-      switch options.array
-        when 'as-map'
-          result = @recursive_numeric_map_to_array(result)
-        when 'as-string','as-json'
-          result = @recursive_array_string_to_array(result)
+    unless array?
+      return null
     else
-      result = @recursive_numeric_map_to_array(result)
-    if options?.null? and options.null is 'as-blank'
-      result = @recursive_blank_string_to_null(result)
-    return result
+      result = {}
+      for pair in array
+        path = (pair[0]).split('.')
+        name = path.pop()
+        cur = result
+        for segment in path
+          cur = cur[segment] = cur[segment] ? {}
+        cur[name] = pair[1]
+      if options?.array?
+        switch options.array
+          when 'as-map'
+            result = @recursive_numeric_map_to_array(result)
+          when 'as-string','as-json'
+            result = @recursive_array_string_to_array(result)
+      else
+        result = @recursive_numeric_map_to_array(result)
+      if options?.null? and options.null is 'as-blank'
+        result = @recursive_blank_string_to_null(result)
+      return result
 
   # `is_int` - returns true if and only if `i` is or can be parsed as an integer value
   is_int:(i)->(i? and (parseFloat(i) is parseInt(i)) and not isNaN(i))
